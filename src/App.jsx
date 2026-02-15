@@ -85,9 +85,12 @@ function App() {
           // 2. Fetch City Name (Reverse Geocoding)
           let cityName = 'Tu Ubicación'
           try {
-            const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
+            const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`, {
+              headers: { 'User-Agent': 'HappyNotes/1.0' }
+            })
             const geoData = await geoRes.json()
-            cityName = geoData.address.city || geoData.address.town || geoData.address.village || 'Tu Ubicación'
+            const addr = geoData.address
+            cityName = addr.city || addr.town || addr.village || addr.suburb || addr.hamlet || addr.municipality || 'Tu Ubicación'
           } catch (e) {
             console.warn("No se pudo obtener el nombre de la ciudad.")
           }
@@ -125,7 +128,7 @@ function App() {
           const weatherData = await weatherRes.json()
           setWeather({
             ...weatherData.current_weather,
-            city: locData.city || 'Tu ciudad',
+            city: locData.city || locData.region || 'Tu ciudad',
             lat: locData.latitude,
             lon: locData.longitude
           })
