@@ -43,17 +43,15 @@
    npm install
    ```
 
-3. **Ejecutar el Servidor de Base de Datos**:
-   En una terminal separada, ejecuta:
+3. **Iniciar la Aplicación Completa**:
    ```bash
-   npm run server
+   ./start.sh
    ```
+   Este script inicia automáticamente tanto el servidor de base de datos como el frontend.
 
-4. **Ejecutar la App Frontend (HTTPS)**:
-   En otra terminal:
-   ```bash
-   npm run dev
-   ```
+   **Alternativamente**, puedes ejecutarlos por separado:
+   - Terminal 1 (Base de Datos): `npm run server`
+   - Terminal 2 (Frontend): `npm run dev`
    *Nota: Al usar HTTPS local, el navegador te pedirá confirmar el certificado de seguridad. Haz clic en "Avanzado" y "Continuar".*
 
 4. **Acceso**: Abre [https://localhost:5173/](https://localhost:5173/) en tu navegador.

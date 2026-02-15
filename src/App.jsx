@@ -563,17 +563,18 @@ function CalendarView({ date, setDate, notes, selectedDay, setSelectedDay, onDay
             })}
           </div>
         </div>
-      </div>
-      <div className="day-detail">
-        <div className="unit-sub" style={{ marginBottom: '1rem' }}>Resumen del día</div>
-        <h2 style={{ marginBottom: '1.5rem', fontSize: '1.2rem', fontWeight: 800 }}>{selectedDay}</h2>
-        <div style={{ overflowY: 'auto' }}>
-          {dayNotes.length > 0 ? dayNotes.map(n => (
-            <div key={n.id} style={{ marginBottom: '2rem' }}>
-              <h4 style={{ fontWeight: 800, fontSize: '1.4rem', marginBottom: '0.6rem', fontFamily: 'Caveat, cursive' }}>{n.title || 'Nota'}</h4>
-              <p style={{ fontSize: '1rem', color: 'var(--text-dim)', lineHeight: 1.7 }}>{n.content}</p>
-            </div>
-          )) : <div style={{ marginTop: '4rem', textAlign: 'center', opacity: 0.2, fontWeight: 700 }}>Sin planes.</div>}
+
+        <div className="day-detail" style={{ marginTop: '2rem' }}>
+          <div className="unit-sub" style={{ marginBottom: '1rem' }}>Resumen del día</div>
+          <h2 style={{ marginBottom: '1.5rem', fontSize: '1.2rem', fontWeight: 800 }}>{selectedDay}</h2>
+          <div style={{ overflowY: 'auto', maxHeight: '400px' }}>
+            {dayNotes.length > 0 ? dayNotes.map(n => (
+              <div key={n.id} style={{ marginBottom: '2rem' }}>
+                <h4 style={{ fontWeight: 800, fontSize: '1.4rem', marginBottom: '0.6rem', fontFamily: 'Caveat, cursive' }}>{n.title || 'Nota'}</h4>
+                <p style={{ fontSize: '1rem', color: 'var(--text-dim)', lineHeight: 1.7 }}>{n.content}</p>
+              </div>
+            )) : <div style={{ marginTop: '4rem', textAlign: 'center', opacity: 0.2, fontWeight: 700 }}>Sin planes.</div>}
+          </div>
         </div>
       </div>
     </div>
