@@ -449,6 +449,9 @@ body {
   flex: 1;
   padding: 5rem 7rem;
   overflow-y: auto;
+  /* Vertical scroll only if needed */
+  display: flex;
+  flex-direction: column;
 }
 
 .section-title {
@@ -724,6 +727,18 @@ body {
   grid-template-columns: 1fr 280px;
   gap: 1.25rem;
   animation: entrance 0.8s var(--ease-premium);
+  height: 100%;
+  max-height: calc(100vh - 12rem);
+  /* Account for padding */
+  overflow: hidden;
+}
+
+.calendar-main {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  /* Important for flex child overflow */
 }
 
 .calendar-grid-container {
@@ -731,12 +746,18 @@ body {
   padding: 1.5rem;
   border-radius: 24px;
   border: 1px solid var(--border-soft);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 8px;
+  flex: 1;
+  align-content: space-around;
 }
 
 .calendar-day {

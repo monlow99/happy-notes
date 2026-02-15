@@ -15,7 +15,8 @@ import {
   ArrowRight,
   ShieldCheck,
   User,
-  Sparkles
+  Sparkles,
+  MapPin
 } from 'lucide-react'
 import './index.css'
 
@@ -93,7 +94,9 @@ function App() {
 
           setWeather({
             ...weatherData.current_weather,
-            city: cityName
+            city: cityName,
+            lat: latitude,
+            lon: longitude
           })
           setWeatherLoading(false)
         }, (err) => {
@@ -120,7 +123,12 @@ function App() {
         if (locData.latitude) {
           const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${locData.latitude}&longitude=${locData.longitude}&current_weather=true`)
           const weatherData = await weatherRes.json()
-          setWeather({ ...weatherData.current_weather, city: locData.city || 'Tu ciudad' })
+          setWeather({
+            ...weatherData.current_weather,
+            city: locData.city || 'Tu ciudad',
+            lat: locData.latitude,
+            lon: locData.longitude
+          })
         }
       } catch (e) { } finally { setWeatherLoading(false) }
     }
@@ -209,7 +217,22 @@ function App() {
         </div>
       </div>
       <div className="status-bar-unit">
-        <div className="unit-sub">Clima</div>
+        <div className="unit-sub" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+          <span>{weather?.city || 'Clima'}</span>
+          {weather && (
+            <a
+              href={`https://www.google.com/maps?q=${weather.lat},${weather.lon}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: 'inherit', opacity: 0.5, transition: 'opacity 0.2s' }}
+              title="Ver en Google Maps"
+              onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+              onMouseLeave={e => e.currentTarget.style.opacity = '0.5'}
+            >
+              <MapPin size={12} />
+            </a>
+          )}
+        </div>
         <div className="unit-main">
           {weatherLoading ? (
             <span style={{ fontSize: '0.9rem', opacity: 0.5 }}>Cargando...</span>
@@ -443,9 +466,9 @@ function CalendarView({ date, setDate, notes, selectedDay, setSelectedDay, onDay
   const dayNotes = notes.filter(n => n.date === selectedDay)
 
   return (
-    <div className="calendar-view" style={{ animation: 'entrance 0.8s var(--ease-premium)' }}>
+    <div className="calendar-view">
       <div className="calendar-main">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <h1 className="section-title" style={{ marginBottom: 0 }}>{meses[date.getMonth()]} <small style={{ opacity: 0.2 }}>{date.getFullYear()}</small></h1>
           <div style={{ display: 'flex', gap: '1rem' }}>
             <button className="btn btn-secondary" style={{ padding: '0 1rem' }} onClick={() => setDate(new Date(date.getFullYear(), date.getMonth() - 1, 1))}><ArrowLeft size={18} /></button>
@@ -471,16 +494,16 @@ function CalendarView({ date, setDate, notes, selectedDay, setSelectedDay, onDay
           </div>
         </div>
       </div>
-      <div className="day-detail" style={{ background: 'var(--surface-mid)', padding: '4rem 3rem', borderRadius: '40px', border: '1px solid var(--border-soft)' }}>
+      <div className="day-detail">
         <div className="unit-sub" style={{ marginBottom: '1rem' }}>Resumen del día</div>
-        <h2 style={{ marginBottom: '3rem', fontSize: '1.2rem', fontWeight: 800 }}>{selectedDay}</h2>
+        <h2 style={{ marginBottom: '1.5rem', fontSize: '1.2rem', fontWeight: 800 }}>{selectedDay}</h2>
         <div style={{ overflowY: 'auto' }}>
           {dayNotes.length > 0 ? dayNotes.map(n => (
-            <div key={n.id} style={{ marginBottom: '3rem' }}>
-              <h4 style={{ fontWeight: 800, fontSize: '1.4rem', marginBottom: '0.8rem', fontFamily: 'Caveat, cursive' }}>{n.title || 'Nota'}</h4>
+            <div key={n.id} style={{ marginBottom: '2rem' }}>
+              <h4 style={{ fontWeight: 800, fontSize: '1.4rem', marginBottom: '0.6rem', fontFamily: 'Caveat, cursive' }}>{n.title || 'Nota'}</h4>
               <p style={{ fontSize: '1rem', color: 'var(--text-dim)', lineHeight: 1.7 }}>{n.content}</p>
             </div>
-          )) : <div style={{ marginTop: '6rem', textAlign: 'center', opacity: 0.2, fontWeight: 700 }}>Sin planes.</div>}
+          )) : <div style={{ marginTop: '4rem', textAlign: 'center', opacity: 0.2, fontWeight: 700 }}>Sin planes.</div>}
         </div>
       </div>
     </div>
