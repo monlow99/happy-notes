@@ -9,35 +9,35 @@ const NOTE_COLORS = [
   { name: 'orange', color: 'rgba(249, 115, 22, 0.1)' },
 ]
 
-function App() {
-  const [notes, setNotes] = useState(() => {
-    const saved = localStorage.getItem('lumina-notes-v2')
-    return saved ? JSON.parse(saved) : [
-      { id: 1, title: 'Bienvenido ✨', content: 'Tu espacio creativo para ideas brillantes.', date: new Date().toLocaleDateString(), color: 'default', pinned: true },
-      { id: 2, title: 'Organización', content: 'Puedes fijar notas importantes y usar colores para categorizarlas.', date: new Date().toLocaleDateString(), color: 'blue', pinned: false }
-    ]
-  })
+const USERS = [
+  { id: 'user1', name: 'Alex', avatar: 'A' },
+  { id: 'user2', name: 'Luna', avatar: 'L' }
+]
 
-  const [search, setSearch] = useState('')
+function App() {
+  const [currentUser, setCurrentUser] = useState(null)
+  const [view, setView] = useState('notes') // 'notes' or 'calendar'
+  const [notes, setNotes] = useState([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingNote, setEditingNote] = useState(null)
-  const [form, setForm] = useState({ title: '', content: '', color: 'default' })
+  const [form, setForm] = useState({ title: '', content: '', color: 'default', date: new Date().toISOString().split('T')[0] })
 
+  // Load user data on login
   useEffect(() => {
-    localStorage.setItem('lumina-notes-v2', JSON.stringify(notes))
-  }, [notes])
+    if (currentUser) {
+      const saved = localStorage.getItem(`happy-notes-${currentUser.id}`)
+      setNotes(saved ? JSON.parse(saved) : [
+        { id: 1, title: 'Bienvenido ' + currentUser.name + '! ✨', content: 'Este es tu espacio creativo personal.', date: new Date().toISOString().split('T')[0], color: 'default', pinned: true },
+      ])
+    }
+  }, [currentUser])
 
-  const openAddModal = () => {
-    setEditingNote(null)
-    setForm({ title: '', content: '', color: 'default' })
-    setIsModalOpen(true)
-  }
-
-  const openEditModal = (note) => {
-    setEditingNote(note.id)
-    setForm({ title: note.title, content: note.content, color: note.color || 'default' })
-    setIsModalOpen(true)
-  }
+  // Save changes
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem(`happy-notes-${currentUser.id}`, JSON.stringify(notes))
+    }
+  }, [notes, currentUser])
 
   const saveNote = () => {
     if (!form.title.trim() && !form.content.trim()) return
@@ -48,7 +48,6 @@ function App() {
       const note = {
         ...form,
         id: Date.now(),
-        date: new Date().toLocaleDateString(),
         pinned: false
       }
       setNotes([note, ...notes])
@@ -56,128 +55,119 @@ function App() {
     setIsModalOpen(false)
   }
 
-  const togglePin = (id) => {
-    setNotes(notes.map(n => n.id === id ? { ...n, pinned: !n.pinned } : n))
-  }
-
   const deleteNote = (id) => {
-    if (window.confirm('¿Eliminar esta nota?')) {
+    if (window.confirm('¿Eliminar esta idea?')) {
       setNotes(notes.filter(n => n.id !== id))
     }
   }
 
-  const filteredNotes = notes
-    .filter(n =>
-      n.title.toLowerCase().includes(search.toLowerCase()) ||
-      n.content.toLowerCase().includes(search.toLowerCase())
-    )
-    .sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0))
+  const togglePin = (id) => {
+    setNotes(notes.map(n => n.id === id ? { ...n, pinned: !n.pinned } : n))
+  }
 
-  return (
-    <div className="app-container">
-      <header>
-        <div className="header-top">
-          <h1>Happy Notes</h1>
-          <div style={{ color: 'var(--text-dim)', fontSize: '0.9rem' }}>
-            {notes.length} {notes.length === 1 ? 'nota' : 'notas'}
-          </div>
-        </div>
+  // --- RENDERING VIEWS ---
 
-        <div className="search-container">
-          <svg className="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Buscar notas..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-      </header>
-
-      <main>
-        {filteredNotes.length > 0 ? (
-          <div className="notes-grid">
-            {filteredNotes.map(note => (
-              <div
-                key={note.id}
-                className={`note-card ${note.pinned ? 'pinned' : ''}`}
-                style={{ background: `rgba(${NOTE_COLORS.find(c => c.name === note.color)?.color.match(/\d+/g).join(',')}, 0.05)` }}
-                onClick={() => openEditModal(note)}
-              >
-                <div className="note-header">
-                  <h3>{note.title || 'Sin título'}</h3>
-                  <div
-                    className={`pin-icon ${note.pinned ? 'active' : ''}`}
-                    onClick={(e) => { e.stopPropagation(); togglePin(note.id); }}
-                  >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill={note.pinned ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
-                      <path d="M21 10V8a2 2 0 00-2-2H5a2 2 0 00-2 2v2a2 2 0 002 2h14a2 2 0 002-2zM7 6v4M17 6v4M12 12v8M10 20h4"></path>
-                    </svg>
-                  </div>
-                </div>
-                <p>{note.content}</p>
-                <div className="note-footer">
-                  <span className="note-date">{note.date}</span>
-                  <div className="actions">
-                    <button className="btn-icon delete" onClick={(e) => { e.stopPropagation(); deleteNote(note.id); }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
+  if (!currentUser) {
+    return (
+      <div className="login-container">
+        <div className="bg-mesh"></div>
+        <div className="login-card">
+          <h2>Happy Notes</h2>
+          <p style={{ color: 'var(--text-dim)', marginBottom: '2rem' }}>Elige tu perfil para continuar</p>
+          <div className="user-selection">
+            {USERS.map(user => (
+              <div key={user.id} className="user-avatar-btn" onClick={() => setCurrentUser(user)}>
+                <div className="avatar">{user.avatar}</div>
+                <span style={{ fontWeight: 600 }}>{user.name}</span>
               </div>
             ))}
           </div>
-        ) : (
-          <div className="empty-state">
-            <div className="empty-icon">
-              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-              </svg>
-            </div>
-            <p>{search ? 'No se encontraron notas' : 'Captura tu primera idea brillante'}</p>
+        </div>
+      </div>
+    )
+  }
+
+  const sortedNotes = [...notes].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0))
+
+  return (
+    <div className="app-layout">
+      <div className="bg-mesh"></div>
+
+      <aside className="sidebar">
+        <div style={{ padding: '0 1rem' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>😊 Happy</h2>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>{currentUser.name}'s Workspace</p>
+        </div>
+
+        <nav>
+          <div className={`nav-item ${view === 'notes' ? 'active' : ''}`} onClick={() => setView('notes')}>
+            📌 Notas
           </div>
+          <div className={`nav-item ${view === 'calendar' ? 'active' : ''}`} onClick={() => setView('calendar')}>
+            📅 Calendario
+          </div>
+        </nav>
+
+        <div style={{ marginTop: 'auto' }} className="nav-item" onClick={() => setCurrentUser(null)}>
+          🚪 Salir
+        </div>
+      </aside>
+
+      <main className="content-area">
+        {view === 'notes' ? (
+          <div className="notes-view">
+            <header style={{ marginBottom: '3rem' }}>
+              <h1 style={{ fontSize: '3rem' }}>Mis Notas</h1>
+            </header>
+            <div className="notes-grid">
+              {sortedNotes.map(note => (
+                <div key={note.id} className={`note-card ${note.pinned ? 'pinned' : ''}`}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                    <h3 style={{ fontSize: '1.3rem' }}>{note.title || 'Sin Título'}</h3>
+                    <div onClick={() => togglePin(note.id)} style={{ cursor: 'pointer', opacity: note.pinned ? 1 : 0.2 }}>📍</div>
+                  </div>
+                  <p style={{ flex: 1, color: 'var(--text-dim)', lineHeight: 1.6 }}>{note.content}</p>
+                  <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.8rem', opacity: 0.4 }}>{note.date}</span>
+                    <button onClick={() => deleteNote(note.id)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>🗑️</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <CalendarView notes={notes} />
         )}
       </main>
 
-      <button className="fab" onClick={openAddModal}>+</button>
+      <button className="fab" onClick={() => { setEditingNote(null); setForm({ title: '', content: '', color: 'default', date: new Date().toISOString().split('T')[0] }); setIsModalOpen(true); }}>
+        +
+      </button>
 
       {isModalOpen && (
         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <h2 style={{ marginBottom: '1.5rem', fontWeight: 600 }}>{editingNote ? 'Editar Nota' : 'Nueva Nota'}</h2>
-
-            <div className="color-selector">
-              {NOTE_COLORS.map(c => (
-                <div
-                  key={c.name}
-                  className={`color-dot ${form.color === c.name ? 'active' : ''}`}
-                  style={{ background: c.color }}
-                  onClick={() => setForm({ ...form, color: c.name })}
-                />
-              ))}
-            </div>
-
+            <h2 style={{ marginBottom: '2rem' }}>Nueva Nota</h2>
             <input
               type="text"
               className="modal-input"
-              placeholder="Título..."
+              placeholder="¿En qué piensas?"
               value={form.title}
               onChange={e => setForm({ ...form, title: e.target.value })}
-              autoFocus
+            />
+            <input
+              type="date"
+              className="modal-input"
+              value={form.date}
+              onChange={e => setForm({ ...form, date: e.target.value })}
             />
             <textarea
               className="modal-textarea"
-              rows="6"
+              rows="5"
               placeholder="Contenido..."
               value={form.content}
               onChange={e => setForm({ ...form, content: e.target.value })}
             />
-
             <div className="modal-actions">
               <button className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Cancelar</button>
               <button className="btn btn-primary" onClick={saveNote}>Guardar</button>
@@ -185,6 +175,35 @@ function App() {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+function CalendarView({ notes }) {
+  const days = Array.from({ length: 31 }, (_, i) => i + 1)
+
+  return (
+    <div className="calendar-view">
+      <header style={{ marginBottom: '3rem' }}>
+        <h1 style={{ fontSize: '3rem' }}>Calendario</h1>
+        <p style={{ color: 'var(--text-dim)' }}>Octubre 2026</p>
+      </header>
+
+      <div className="calendar-grid">
+        {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(d => (
+          <div key={d} className="calendar-day-label">{d}</div>
+        ))}
+        {days.map(d => {
+          const formattedDay = `2026-10-${d.toString().padStart(2, '0')}`
+          const hasNotes = notes.some(n => n.date === formattedDay)
+          return (
+            <div key={d} className={`calendar-day ${d === 15 ? 'today' : ''}`}>
+              <span className="day-num">{d}</span>
+              {hasNotes && <div className="day-notes-dot"></div>}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
