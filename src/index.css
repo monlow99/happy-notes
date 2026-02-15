@@ -596,7 +596,7 @@ body.is-mobile .status-container {
   }
 
   .content-area {
-    padding: 6rem 1rem 8rem;
+    padding: 6rem 1.5rem 8rem;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -638,11 +638,11 @@ body.is-mobile .status-container {
   }
 
   .calendar-grid-container {
-    padding: 1rem;
+    padding: 1.25rem;
     border-radius: 20px;
     height: auto;
     flex: none;
-    /* Allow natural height on mobile */
+    margin: 0;
   }
 
   .calendar-grid {
@@ -658,12 +658,12 @@ body.is-mobile .status-container {
   }
 
   .day-detail {
-    padding: 3rem 1.25rem 2rem;
+    padding: 2rem 1.5rem;
     border-radius: 20px;
     height: auto;
     min-height: auto;
     flex: none;
-    margin-bottom: 3rem;
+    margin: 0 0 3rem 0;
   }
 
   .notes-grid {
