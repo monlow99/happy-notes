@@ -73,21 +73,37 @@ function App() {
   const fetchWeather = async () => {
     try {
       setWeatherLoading(true)
-      // 1. Get location via browser geolocation (User must permit)
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(async (pos) => {
-          const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current_weather=true`)
+          const { latitude, longitude } = pos.coords
+
+          // 1. Fetch Weather
+          const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`)
           const weatherData = await weatherRes.json()
 
-          // Reverse geocode to find city (optional, fallback to 'Ubicación')
+          // 2. Fetch City Name (Reverse Geocoding)
+          let cityName = 'Tu Ubicación'
+          try {
+            const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
+            const geoData = await geoRes.json()
+            cityName = geoData.address.city || geoData.address.town || geoData.address.village || 'Tu Ubicación'
+          } catch (e) {
+            console.warn("No se pudo obtener el nombre de la ciudad.")
+          }
+
           setWeather({
             ...weatherData.current_weather,
-            city: 'Tu Ubicación'
+            city: cityName
           })
           setWeatherLoading(false)
-        }, () => setWeatherLoading(false))
+        }, (err) => {
+          console.error("Error de geolocalización:", err)
+          setWeatherLoading(false)
+          alert("No se pudo obtener tu ubicación. Asegúrate de dar permisos en el navegador.")
+        }, { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 })
       } else {
         setWeatherLoading(false)
+        alert("Tu navegador no soporta geolocalización.")
       }
     } catch (e) {
       console.error("Error al detectar clima:", e)
