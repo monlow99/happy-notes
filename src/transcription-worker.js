@@ -1,6 +1,7 @@
 import { pipeline, env } from '@huggingface/transformers';
 
 // Configuración para ejecución local
+env.allowRemoteModels = true;
 env.allowLocalModels = false;
 env.useBrowserCache = true;
 
@@ -12,8 +13,8 @@ self.onmessage = async (event) => {
     try {
         if (!transcriber) {
             self.postMessage({ status: 'loading', message: 'Cargando modelo de voz (Whisper Tiny)...' });
-            transcriber = await pipeline('automatic-speech-recognition', 'openai/whisper-tiny', {
-                device: 'webgpu' in navigator ? 'webgpu' : 'wasm', // Intentar aceleración
+            transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny', {
+                device: 'wasm', // Forzar WASM para máxima compatibilidad en local
             });
             self.postMessage({ status: 'ready', message: 'Modelo listo' });
         }
