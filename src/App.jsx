@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import * as XLSX from 'xlsx'
 import {
   Clock,
   CloudRain,
@@ -75,6 +76,7 @@ function App() {
   })
   const [activeCategory, setActiveCategory] = useState('Todas')
   const [categories, setCategories] = useState(['General', 'Trabajo', 'Personal', 'Ideas'])
+  const [isPrintingReport, setIsPrintingReport] = useState(false)
 
   // --- Clock & Weather State ---
   const [time, setTime] = useState(new Date())
@@ -101,6 +103,14 @@ function App() {
     }
     localStorage.setItem('happy-theme', isDarkMode ? 'dark' : 'light');
   }, [isDarkMode])
+
+  useEffect(() => {
+    if (isPrintingReport) {
+      document.body.classList.add('printing-report');
+    } else {
+      document.body.classList.remove('printing-report');
+    }
+  }, [isPrintingReport])
 
   const fetchWeather = async () => {
     try {
@@ -340,6 +350,29 @@ function App() {
     window.print()
   }
 
+  const exportAllToExcel = () => {
+    const tableData = notes.map(n => ({
+      Fecha: n.date,
+      Título: n.title || 'Sin Título',
+      Contenido: n.content,
+      Ubicación: n.location || 'N/A',
+      Categoría: n.category || 'General',
+      Fijado: n.pinned ? 'Sí' : 'No'
+    }));
+    const ws = XLSX.utils.json_to_sheet(tableData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Mis Notas");
+    XLSX.writeFile(wb, `HappyNotes_Export_${currentUser.name}_${new Date().toISOString().split('T')[0]}.xlsx`);
+  }
+
+  const exportAllToPDFReport = () => {
+    setIsPrintingReport(true);
+    setTimeout(() => {
+      window.print();
+      setIsPrintingReport(false);
+    }, 200);
+  }
+
   const timeString = time.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
   const secondsString = time.toLocaleTimeString('es-ES', { second: '2-digit' })
   const fullDateString = time.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
@@ -565,6 +598,16 @@ function App() {
                 a.download = `happy-notes-backup-${currentUser.id}.json`;
                 a.click();
               }}><Download size={18} /> Exportar Toda Mi Info (JSON)</button>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.2rem' }}>
+                <button className="btn btn-secondary" onClick={exportAllToExcel}>
+                  <FileText size={18} color="#22c55e" /> Reporte Excel
+                </button>
+                <button className="btn btn-secondary" onClick={exportAllToPDFReport}>
+                  <Download size={18} color="#ef4444" /> Reporte PDF (Completo)
+                </button>
+              </div>
+
               <button className="btn btn-secondary" style={{ width: '100%', color: 'var(--error)' }} onClick={() => {
                 if (window.confirm('¿Eliminar perfil y todos sus datos?')) {
                   const updated = profiles.filter(p => p.id !== currentUser.id)
@@ -698,6 +741,37 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* 📊 Printable Full Report (Hidden in UI, only for Print) */}
+      <div className="printable-report">
+        <div className="report-header">
+          <div>
+            <h1>Happy Notes - Reporte Completo</h1>
+            <p style={{ opacity: 0.6 }}>Generado el {new Date().toLocaleDateString()} para <strong>{currentUser.name}</strong></p>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <p>ID: {currentUser.id}</p>
+            <p>Notas totales: {notes.length}</p>
+          </div>
+        </div>
+
+        {notes.sort((a, b) => new Date(b.date) - new Date(a.date)).map(note => (
+          <div key={note.id} className="report-note">
+            <div className="report-note-title">{note.title || 'Sin Título'}</div>
+            <div className="report-meta">
+              <span>📅 {note.date}</span>
+              <span>🏷️ {note.category || 'General'}</span>
+              {note.location && <span>📍 {note.location}</span>}
+              {note.pinned && <span style={{ color: 'var(--accent-primary)' }}>📌 Fijada</span>}
+            </div>
+            <div className="report-content">{note.content}</div>
+          </div>
+        ))}
+
+        <div style={{ marginTop: '5rem', textAlign: 'center', opacity: 0.3, fontSize: '0.8rem' }}>
+          Este documento fue generado automáticamente por Happy Notes.
+        </div>
+      </div>
     </div>
   )
 }

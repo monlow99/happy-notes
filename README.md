@@ -9,7 +9,8 @@
 - **🏷️ Categorías y Etiquetas**: Organiza tus notas en secciones (General, Trabajo, Personal, Ideas) para un acceso rápido y ordenado.
 - **📌 Notas Fijadas (Pins)**: Mantén tus pensamientos más importantes siempre arriba con la función de fijado prioritario.
 - **🌓 Modo Dual (Claro/Oscuro)**: Cambia instantáneamente entre el elegante tema *Slate Emerald* (oscuro) y el limpio *Snow Emerald* (claro).
-- **📥 Exportación Avanzada**: Guarda tus notas individualmente en **TXT**, imprímelas en **PDF** con un diseño limpio, o exporta toda tu información en **JSON** para copias de seguridad.
+- **📥 Exportación Avanzada**: Guarda tus notas individualmente en **TXT**, genera reportes completos en **Excel (.xlsx)** con toda la data formateada, o imprime un reporte maestro en **PDF** con un diseño profesional.
+- **💾 Copias de Seguridad**: Exporta toda tu información en **JSON** para una portabilidad total.
 - **🔐 Acceso Simplificado**: Inicia sesión con un **Nombre de Usuario** fácil de recordar (¡sin números largos!) y tu PIN.
 - **🌐 Sincronización Multi-Dispositivo**: Base de datos centralizada en **SQLite**. Accede a tus notas desde cualquier dispositivo de tu red local.
 - **🚀 Arquitectura Full-Stack**: Integridad de datos gestionada por un servidor Node.js/Express de alto rendimiento.
