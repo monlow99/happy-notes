@@ -349,7 +349,7 @@ function App() {
         <StatusApplets />
         <nav style={{ marginTop: '3rem', flex: 1 }}>
           <div className={`nav-link ${view === 'notes' && !isSettingsOpen ? 'active' : ''}`} onClick={() => { setView('notes'); setIsSettingsOpen(false); }}>
-            <div className="icon-box"><Notebook size={20} /></div> <span className="nav-text">Workspace</span>
+            <div className="icon-box"><Notebook size={20} /></div> <span className="nav-text">Notas del Día</span>
           </div>
           <div className={`nav-link ${view === 'calendar' && !isSettingsOpen ? 'active' : ''}`} onClick={() => { setView('calendar'); setIsSettingsOpen(false); }}>
             <div className="icon-box"><Calendar size={20} /></div> <span className="nav-text">Calendario</span>
@@ -389,7 +389,7 @@ function App() {
           </div>
         ) : view === 'notes' ? (
           <div style={{ animation: 'entrance 0.8s var(--ease-premium)' }}>
-            <h1 className="section-title">Workspace</h1>
+            <h1 className="section-title">Notas del Día</h1>
             <div className="notes-grid">
               {notes.length === 0 ? (
                 <div className="empty-state-card" style={{ background: 'var(--surface-mid)', border: '1px dashed var(--border-soft)', padding: '6rem', borderRadius: '40px', gridColumn: '1/-1', textAlign: 'center' }}>

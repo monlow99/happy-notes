@@ -19,7 +19,7 @@
 ![Login Preview](public/login.png)
 *Pantalla de inicio con simetría axial y detección de ubicación.*
 
-### 🚀 Espacio de Trabajo (Workspace)
+### 🚀 Notas del Día (Workspace)
 ![Workspace Preview](public/workspace.png)
 *Tu centro de creación minimalista con organización por tarjetas inteligentes.*
 
