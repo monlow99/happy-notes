@@ -111,6 +111,8 @@ function App() {
   const [categories, setCategories] = useState(['General', 'Trabajo', 'Personal', 'Ideas'])
   const [isPrintingReport, setIsPrintingReport] = useState(false)
   const [uiScale, setUiScale] = useState(() => parseFloat(localStorage.getItem('happy-ui-scale')) || 1)
+  const [syncStatus, setSyncStatus] = useState('')
+  const [isSyncing, setIsSyncing] = useState(false)
 
   // --- Clock & Weather State ---
   const [time, setTime] = useState(new Date())
@@ -388,11 +390,14 @@ function App() {
   useEffect(() => {
     if (currentUser) {
       const fetchNotes = async () => {
+        // Pausar polling si el modal está abierto o si estamos sincronizando cambios locales
+        if (isModalOpen || isSyncing) return;
+
         try {
           const res = await fetch(`${API_URL}/api/notes/${currentUser.id}`);
           const data = await res.json();
 
-          // Comparación simple para evitar ciclos de actualización infinitos
+          // Solo actualizar si realmente hay cambios y no hay cambios locales pendientes
           if (JSON.stringify(data) !== JSON.stringify(notes)) {
             setNotes(data);
           }
@@ -401,23 +406,34 @@ function App() {
       }
 
       fetchNotes(); // Carga inicial
-      const interval = setInterval(fetchNotes, 5000); // Polling cada 5 segundos
+      const interval = setInterval(fetchNotes, 10000); // Polling cada 10 segundos
       return () => clearInterval(interval);
     }
-  }, [currentUser])
+  }, [currentUser, isModalOpen, isSyncing])
 
   useEffect(() => {
-    if (currentUser) {
+    if (currentUser && notes.length > 0) {
       const syncNotes = async () => {
+        setIsSyncing(true);
+        setSyncStatus('Sincronizando...');
         try {
-          await fetch(`${API_URL}/api/notes/${currentUser.id}/sync`, {
+          const response = await fetch(`${API_URL}/api/notes/${currentUser.id}/sync`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ notes })
           });
-        } catch (e) { console.error("Error sincronizando notas:", e); }
+          if (response.ok) {
+            setSyncStatus('Sincronizado');
+            setTimeout(() => setSyncStatus(''), 2000);
+          }
+        } catch (e) {
+          console.error("Error sincronizando notas:", e);
+          setSyncStatus('Error de conexión');
+        } finally {
+          setIsSyncing(false);
+        }
       }
-      const timer = setTimeout(syncNotes, 1000); // Debounce sync
+      const timer = setTimeout(syncNotes, 2000); // Debounce sync 2s
       return () => clearTimeout(timer);
     }
   }, [notes, currentUser])
@@ -511,10 +527,10 @@ function App() {
 
   const saveNote = () => {
     if (!form.title.trim() && !form.content.trim() && !form.attachment) return
-    const noteData = { ...form, id: editingNote || Date.now() };
+    const noteData = { ...form, id: editingNote ? editingNote.toString() : Date.now().toString() };
 
     if (editingNote) {
-      setNotes(notes.map(n => n.id === editingNote ? noteData : n))
+      setNotes(notes.map(n => n.id.toString() === editingNote.toString() ? noteData : n))
     } else {
       setNotes([{ ...noteData, pinned: false, location: weather?.city || null }, ...notes])
     }
@@ -593,7 +609,7 @@ function App() {
       const data = XLSX.utils.sheet_to_json(ws);
 
       const newNote = {
-        id: Date.now(),
+        id: Date.now().toString(),
         title: file.name.split('.')[0],
         content: JSON.stringify(data),
         date: new Date().toISOString().split('T')[0],
@@ -644,12 +660,13 @@ function App() {
         const result = await mammoth.extractRawText({ arrayBuffer });
         const text = result.value;
         const newNote = {
-          id: Date.now(),
+          id: Date.now().toString(),
           title: file.name.replace('.docx', ''),
           content: text,
           date: new Date().toISOString().split('T')[0],
           category: 'General',
-          pinned: false
+          pinned: false,
+          type: 'word'
         };
         setNotes([newNote, ...notes]);
         setSettingsStatus('Documento Word importado como nota.');
@@ -667,6 +684,30 @@ function App() {
 
   const StatusApplets = () => (
     <div className="status-container">
+      {syncStatus && (
+        <div style={{
+          position: 'fixed',
+          bottom: '2rem',
+          right: '2rem',
+          zIndex: 1000,
+          padding: '0.6rem 1.2rem',
+          background: 'var(--surface-mid)',
+          borderRadius: '50px',
+          border: '1px solid var(--border-soft)',
+          fontSize: '0.75rem',
+          fontWeight: 800,
+          color: syncStatus.includes('Error') ? 'var(--error)' : 'var(--accent-primary)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+          animation: 'entrance 0.5s var(--ease-premium)'
+        }}>
+          {syncStatus.includes('Sincronizando') && <Loader2 size={14} className="spin" />}
+          {syncStatus.includes('Sincronizado') && <ShieldCheck size={14} />}
+          {syncStatus}
+        </div>
+      )}
       <div className="status-bar-unit">
         <div className="unit-sub">{fullDateString}</div>
         <div className="unit-main">
