@@ -21,6 +21,7 @@ import {
 import './index.css'
 
 const encrypt = (text) => btoa(`salt_${text}_secure`)
+const API_URL = `http://${window.location.hostname}:3001`
 
 const MOTIVACIONES = [
   "¿Qué gran idea tienes hoy?",
@@ -32,10 +33,7 @@ const MOTIVACIONES = [
 ]
 
 function App() {
-  const [profiles, setProfiles] = useState(() => {
-    const saved = localStorage.getItem('happy-profiles')
-    return saved ? JSON.parse(saved) : []
-  })
+  const [profiles, setProfiles] = useState([])
 
   const [currentUser, setCurrentUser] = useState(null)
   const [selectedUser, setSelectedUser] = useState(null)
@@ -139,20 +137,43 @@ function App() {
   }, [])
 
   useEffect(() => {
-    localStorage.setItem('happy-profiles', JSON.stringify(profiles))
-  }, [profiles])
+    const fetchProfiles = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/profiles`);
+        const data = await res.json();
+        setProfiles(data);
+      } catch (e) { console.error("Error cargando perfiles:", e); }
+    }
+    fetchProfiles();
+  }, [])
 
   useEffect(() => {
     if (currentUser) {
-      const saved = localStorage.getItem(`happy-notes-${currentUser.id}`)
-      setNotes(saved ? JSON.parse(saved) : [])
-      setMotivation(MOTIVACIONES[Math.floor(Math.random() * MOTIVACIONES.length)])
+      const fetchNotes = async () => {
+        try {
+          const res = await fetch(`${API_URL}/api/notes/${currentUser.id}`);
+          const data = await res.json();
+          setNotes(data);
+          setMotivation(MOTIVACIONES[Math.floor(Math.random() * MOTIVACIONES.length)])
+        } catch (e) { console.error("Error cargando notas:", e); }
+      }
+      fetchNotes();
     }
   }, [currentUser])
 
   useEffect(() => {
     if (currentUser) {
-      localStorage.setItem(`happy-notes-${currentUser.id}`, JSON.stringify(notes))
+      const syncNotes = async () => {
+        try {
+          await fetch(`${API_URL}/api/notes/${currentUser.id}/sync`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ notes })
+          });
+        } catch (e) { console.error("Error sincronizando notas:", e); }
+      }
+      const timer = setTimeout(syncNotes, 1000); // Debounce sync
+      return () => clearTimeout(timer);
     }
   }, [notes, currentUser])
 
@@ -168,22 +189,45 @@ function App() {
     }
   }, [selectedUser])
 
-  const handleCreateProfile = () => {
+  const handleCreateProfile = async () => {
     if (regName.trim().length < 2 || regPass.length < 4) return;
     const newId = regName.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now()
-    const newProfile = { id: newId, name: regName.trim(), avatar: regName.trim().charAt(0).toUpperCase(), password: encrypt(regPass) }
-    setProfiles([...profiles, newProfile])
-    setIsRegistering(false)
-    setRegName(''); setRegPass(''); setError(false);
-    setSelectedUser(newProfile)
+    const newProfile = {
+      id: newId,
+      name: regName.trim(),
+      avatar: regName.trim().charAt(0).toUpperCase(),
+      pin: encrypt(regPass)
+    }
+
+    try {
+      await fetch(`${API_URL}/api/profiles`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newProfile)
+      });
+      setProfiles([...profiles, { id: newProfile.id, name: newProfile.name, avatar: newProfile.avatar }]);
+      setIsRegistering(false)
+      setRegName(''); setRegPass(''); setError(false);
+      setSelectedUser(newProfile)
+    } catch (e) { alert("Error al crear perfil en el servidor."); }
   }
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     const hashed = encrypt(password)
-    if (hashed === selectedUser.password) {
-      setCurrentUser(selectedUser)
-      setPassword(''); setError(false);
-    } else {
+    try {
+      const res = await fetch(`${API_URL}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: selectedUser.id, pin: hashed })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCurrentUser(data.user)
+        setPassword(''); setError(false);
+      } else {
+        throw new Error();
+      }
+    } catch (e) {
       setIsShaking(true); setError(true); setPassword('');
       setTimeout(() => { setIsShaking(false); setError(false); }, 1000)
     }

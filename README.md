@@ -6,10 +6,9 @@
 
 ## 🌟 Características Pro-Max
 
+- **🌐 Sincronización Multi-Dispositivo**: Base de datos centralizada en **SQLite** que permite acceder a tus notas desde cualquier dispositivo de la red local.
+- **🚀 Arquitectura Full-Stack**: Integridad de datos gestionada por un servidor Node.js/Express de alto rendimiento.
 - **💎 Estética Sovereign Symmetry**: Interfaz basada en cuadrículas Bento y Glassmorphism de última generación con desenfoques de 64px.
-- **🔐 Seguridad de Grado Personal**: Sistema de perfiles múltiples con cifrado local y acceso mediante PIN secreto de 4 dígitos.
-- **🌦️ Inteligencia Ambiental**: Widget de clima con detección manual de ciudad (Reverse Geocoding) y reloj sincronizado.
-- **🚀 Infraestructura Moderna**: Servidor de desarrollo forzado sobre **HTTPS** para habilitar APIs de geolocalización seguras.
 - **🖋️ Tipografía Curada**: Combinación perfecta de *Plus Jakarta Sans* para la interfaz y *Caveat* para tus pensamientos más personales.
 - **📱 Experiencia Fluida**: Animaciones con curvas de aprendizaje `cubic-bezier` y diseño responsivo adaptativo.
 
@@ -44,7 +43,14 @@
    npm install
    ```
 
-3. **Ejecutar en desarrollo (HTTPS)**:
+3. **Ejecutar el Servidor de Base de Datos**:
+   En una terminal separada, ejecuta:
+   ```bash
+   npm run server
+   ```
+
+4. **Ejecutar la App Frontend (HTTPS)**:
+   En otra terminal:
    ```bash
    npm run dev
    ```
