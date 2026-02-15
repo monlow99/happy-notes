@@ -20,11 +20,18 @@
   --text-dim: #94a3b8;
   --text-muted: #475569;
 
+  /* Scaling System (Dynamic) */
+  --ui-scale: 1;
+  --fluid-gap: calc(2rem * var(--ui-scale));
+  --fluid-padding: calc(clamp(2rem, 5vw, 7rem) * var(--ui-scale));
+  --card-min-width: calc(320px * var(--ui-scale));
+
   /* Motion */
-  --radius-xl: 32px;
-  --radius-lg: 20px;
+  --radius-xl: calc(32px * var(--ui-scale));
+  --radius-lg: calc(20px * var(--ui-scale));
   --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
   --transition: all 0.4s var(--ease-premium);
+
   /* Utility Colors */
   --error: #ef4444;
   --success: #10b981;
@@ -438,13 +445,13 @@ body.is-mobile .status-container {
 
 .sidebar-title {
   font-family: 'Caveat', cursive;
-  font-size: 3.2rem;
+  font-size: calc(3.2rem * var(--ui-scale));
   font-weight: 700;
   background: var(--accent-gradient);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  margin-bottom: 3.5rem;
+  margin-bottom: calc(3.5rem * var(--ui-scale));
 }
 
 .nav-link {
@@ -489,11 +496,23 @@ body.is-mobile .status-container {
 
 .content-area {
   flex: 1;
-  padding: 5rem 7rem;
+  padding: var(--fluid-padding);
+  height: 100vh;
   overflow-y: auto;
-  /* Vertical scroll only if needed */
   display: flex;
   flex-direction: column;
+  scroll-behavior: smooth;
+  background: var(--bg-main);
+  transition: padding 0.5s var(--ease-premium);
+}
+
+.content-wrapper {
+  max-width: calc(1400px * var(--ui-scale));
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .section-title {
@@ -506,8 +525,10 @@ body.is-mobile .status-container {
 /* 📝 Notes Grid */
 .notes-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(calc(300px * var(--ui-scale)), 1fr));
+  gap: var(--fluid-gap);
+  width: 100%;
+  align-content: start;
 }
 
 .note-card {
@@ -943,6 +964,7 @@ body.is-mobile .status-container {
   padding-top: 1.5rem;
   border-radius: 0;
 }
+
 /* 📌 Pinned Notes & Categories */
 .note-card.pinned {
   border-color: var(--accent-primary);
@@ -1045,12 +1067,20 @@ body.is-mobile .status-container {
 }
 
 @media print {
-  .sidebar, .fab, .app-header, .nav-link, .category-filter-bar, .export-actions {
+
+  .sidebar,
+  .fab,
+  .app-header,
+  .nav-link,
+  .category-filter-bar,
+  .export-actions {
     display: none !important;
   }
+
   .content-area {
     padding: 0 !important;
   }
+
   .note-card {
     break-inside: avoid;
     box-shadow: none !important;
@@ -1068,7 +1098,7 @@ body.is-mobile .status-container {
   body.printing-report .app-layout {
     display: none !important;
   }
-  
+
   body.printing-report .printable-report {
     display: block !important;
     background: white !important;

@@ -77,6 +77,7 @@ function App() {
   const [activeCategory, setActiveCategory] = useState('Todas')
   const [categories, setCategories] = useState(['General', 'Trabajo', 'Personal', 'Ideas'])
   const [isPrintingReport, setIsPrintingReport] = useState(false)
+  const [uiScale, setUiScale] = useState(() => parseFloat(localStorage.getItem('happy-ui-scale')) || 1)
 
   // --- Clock & Weather State ---
   const [time, setTime] = useState(new Date())
@@ -103,6 +104,11 @@ function App() {
     }
     localStorage.setItem('happy-theme', isDarkMode ? 'dark' : 'light');
   }, [isDarkMode])
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--ui-scale', uiScale);
+    localStorage.setItem('happy-ui-scale', uiScale);
+  }, [uiScale])
 
   useEffect(() => {
     if (isPrintingReport) {
@@ -568,112 +574,136 @@ function App() {
       </aside>
 
       <main className="content-area">
-        {isSettingsOpen ? (
-          <div style={{ animation: 'entrance 0.8s var(--ease-premium)' }}>
-            <h1 className="section-title">Ajustes</h1>
-            <div className="note-card" style={{ maxWidth: '520px' }}>
-              <div style={{ marginBottom: '2.5rem', padding: '1.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '16px', border: '1px solid var(--border-soft)' }}>
-                <label className="unit-sub" style={{ display: 'block', marginBottom: '0.4rem', opacity: 0.6 }}>Tu ID de Sincronización</label>
-                <code style={{ fontSize: '1.1rem', color: 'var(--accent-primary)', fontWeight: 800, wordBreak: 'break-all' }}>{currentUser.id}</code>
-                <p style={{ fontSize: '0.75rem', marginTop: '0.8rem', opacity: 0.5 }}>Usa este ID para iniciar sesión desde otros dispositivos.</p>
-              </div>
-              <h3 style={{ marginBottom: '2rem' }}>Seguridad del Perfil</h3>
-              <div style={{ marginBottom: '2rem' }}>
-                <label className="unit-sub" style={{ display: 'block', marginBottom: '0.8rem' }}>Nuevo PIN</label>
-                <input type="password" maxLength="4" className="form-input" placeholder="4 dígitos" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
-              </div>
-              <button className="btn btn-primary" style={{ width: '100%', marginBottom: '1.2rem' }} onClick={() => {
-                if (newPassword.length === 4) {
-                  setProfiles(profiles.map(p => p.id === currentUser.id ? { ...p, password: encrypt(newPassword) } : p))
-                  setSettingsStatus('Perfil actualizado con éxito.')
-                  setTimeout(() => setSettingsStatus(''), 4000)
-                }
-              }}><Save size={18} /> Guardar Cambios</button>
-              <button className="btn btn-secondary" style={{ width: '100%', marginBottom: '1.2rem' }} onClick={() => {
-                const data = JSON.stringify({ user: currentUser, notes }, null, 2);
-                const blob = new Blob([data], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `happy-notes-backup-${currentUser.id}.json`;
-                a.click();
-              }}><Download size={18} /> Exportar Toda Mi Info (JSON)</button>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.2rem' }}>
-                <button className="btn btn-secondary" onClick={exportAllToExcel}>
-                  <FileText size={18} color="#22c55e" /> Reporte Excel
-                </button>
-                <button className="btn btn-secondary" onClick={exportAllToPDFReport}>
-                  <Download size={18} color="#ef4444" /> Reporte PDF (Completo)
-                </button>
-              </div>
-
-              <button className="btn btn-secondary" style={{ width: '100%', color: 'var(--error)' }} onClick={() => {
-                if (window.confirm('¿Eliminar perfil y todos sus datos?')) {
-                  const updated = profiles.filter(p => p.id !== currentUser.id)
-                  localStorage.removeItem(`happy-notes-${currentUser.id}`)
-                  setProfiles(updated); setCurrentUser(null); setSelectedUser(null);
-                }
-              }}><Trash2 size={18} /> Eliminar Cuenta</button>
-              {settingsStatus && <p style={{ marginTop: '1.5rem', textAlign: 'center', color: 'var(--accent-primary)', fontWeight: 800 }}>{settingsStatus}</p>}
-            </div>
-          </div>
-        ) : view === 'notes' ? (
-          <div style={{ animation: 'entrance 0.8s var(--ease-premium)' }}>
-            <h1 className="section-title">Mis Notas</h1>
-
-            <div className="category-filter-bar">
-              {['Todas', ...categories].map(cat => (
-                <div key={cat} className={`filter-chip ${activeCategory === cat ? 'active' : ''}`} onClick={() => setActiveCategory(cat)}>
-                  {cat}
+        <div className="content-wrapper">
+          {isSettingsOpen ? (
+            <div style={{ animation: 'entrance 0.8s var(--ease-premium)' }}>
+              <h1 className="section-title">Ajustes</h1>
+              <div className="note-card" style={{ maxWidth: '600px' }}>
+                <div style={{ marginBottom: '2.5rem', padding: '1.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '16px', border: '1px solid var(--border-soft)' }}>
+                  <label className="unit-sub" style={{ display: 'block', marginBottom: '0.4rem', opacity: 0.6 }}>Tu ID de Sincronización</label>
+                  <code style={{ fontSize: '1.1rem', color: 'var(--accent-primary)', fontWeight: 800, wordBreak: 'break-all' }}>{currentUser.id}</code>
+                  <p style={{ fontSize: '0.75rem', marginTop: '0.8rem', opacity: 0.5 }}>Usa este ID para iniciar sesión desde otros dispositivos.</p>
                 </div>
-              ))}
-            </div>
 
-            <div className="notes-grid">
-              {notes.length === 0 ? (
-                <div className="empty-state-card" style={{ background: 'var(--surface-mid)', border: '1px dashed var(--border-soft)', padding: '6rem', borderRadius: '40px', gridColumn: '1/-1', textAlign: 'center' }}>
-                  <Sparkles size={48} color="var(--accent-primary)" style={{ marginBottom: '2rem' }} />
-                  <p style={{ fontSize: '1.6rem', color: 'var(--text-main)', maxWidth: '450px', margin: '0 auto 3rem', fontWeight: 600, fontFamily: 'Caveat, cursive' }}>{motivation}</p>
-                  <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}><Plus size={20} /> Crear Primera Nota</button>
+                <div style={{ marginBottom: '2.5rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 style={{ margin: 0 }}>Escalado de Interfaz</h3>
+                    <span className="category-chip" style={{ color: 'var(--accent-primary)' }}>{Math.round(uiScale * 100)}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.8"
+                    max="1.3"
+                    step="0.05"
+                    value={uiScale}
+                    onChange={(e) => setUiScale(parseFloat(e.target.value))}
+                    style={{ width: '100%', accentColor: 'var(--accent-primary)', height: '6px', cursor: 'pointer' }}
+                  />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', fontSize: '0.7rem', opacity: 0.4, fontWeight: 800 }}>
+                    <span>COMPACTO</span>
+                    <span>POR DEFECTO</span>
+                    <span>RELAJADO</span>
+                  </div>
                 </div>
-              ) : notes
-                .filter(n => activeCategory === 'Todas' || n.category === activeCategory)
-                .sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || new Date(b.date) - new Date(a.date))
-                .map(note => (
-                  <div key={note.id} className={`note-card ${note.pinned ? 'pinned' : ''}`} onClick={() => { setEditingNote(note.id); setForm(note); setIsModalOpen(true); }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative' }}>
-                      <h3 style={{ paddingRight: '2rem' }}>{note.title || 'Borrador'}</h3>
-                      {note.pinned && <Pin size={16} className="pin-indicator" fill="var(--accent-primary)" />}
-                    </div>
-                    <div style={{ margin: '1rem 0', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                      <span className="category-chip" style={{ color: 'var(--accent-primary)', fontSize: '0.6rem' }}>{note.category || 'General'}</span>
-                    </div>
-                    <p style={{ display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden', color: 'var(--text-main)' }}>{note.content}</p>
-                    <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: 0.3, fontSize: '0.8rem', fontWeight: 800, paddingTop: '1.5rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        {note.location && <><MapPin size={12} /> {note.location}</>}
-                      </div>
-                      <div>{note.date}</div>
-                    </div>
+
+                <h3 style={{ marginBottom: '2rem' }}>Seguridad del Perfil</h3>
+                <div style={{ marginBottom: '2rem' }}>
+                  <label className="unit-sub" style={{ display: 'block', marginBottom: '0.8rem' }}>Nuevo PIN</label>
+                  <input type="password" maxLength="4" className="form-input" placeholder="4 dígitos" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+                </div>
+                <button className="btn btn-primary" style={{ width: '100%', marginBottom: '1.2rem' }} onClick={() => {
+                  if (newPassword.length === 4) {
+                    setProfiles(profiles.map(p => p.id === currentUser.id ? { ...p, password: encrypt(newPassword) } : p))
+                    setSettingsStatus('Perfil actualizado con éxito.')
+                    setTimeout(() => setSettingsStatus(''), 4000)
+                  }
+                }}><Save size={18} /> Guardar Cambios</button>
+                <button className="btn btn-secondary" style={{ width: '100%', marginBottom: '1.2rem' }} onClick={() => {
+                  const data = JSON.stringify({ user: currentUser, notes }, null, 2);
+                  const blob = new Blob([data], { type: 'application/json' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `happy-notes-backup-${currentUser.id}.json`;
+                  a.click();
+                }}><Download size={18} /> Exportar Toda Mi Info (JSON)</button>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.2rem' }}>
+                  <button className="btn btn-secondary" onClick={exportAllToExcel}>
+                    <FileText size={18} color="#22c55e" /> Reporte Excel
+                  </button>
+                  <button className="btn btn-secondary" onClick={exportAllToPDFReport}>
+                    <Download size={18} color="#ef4444" /> Reporte PDF (Completo)
+                  </button>
+                </div>
+
+                <button className="btn btn-secondary" style={{ width: '100%', color: 'var(--error)' }} onClick={() => {
+                  if (window.confirm('¿Eliminar perfil y todos sus datos?')) {
+                    const updated = profiles.filter(p => p.id !== currentUser.id)
+                    localStorage.removeItem(`happy-notes-${currentUser.id}`)
+                    setProfiles(updated); setCurrentUser(null); setSelectedUser(null);
+                  }
+                }}><Trash2 size={18} /> Eliminar Cuenta</button>
+                {settingsStatus && <p style={{ marginTop: '1.5rem', textAlign: 'center', color: 'var(--accent-primary)', fontWeight: 800 }}>{settingsStatus}</p>}
+              </div>
+            </div>
+          ) : view === 'notes' ? (
+            <div style={{ animation: 'entrance 0.8s var(--ease-premium)' }}>
+              <h1 className="section-title">Mis Notas</h1>
+
+              <div className="category-filter-bar">
+                {['Todas', ...categories].map(cat => (
+                  <div key={cat} className={`filter-chip ${activeCategory === cat ? 'active' : ''}`} onClick={() => setActiveCategory(cat)}>
+                    {cat}
                   </div>
                 ))}
+              </div>
+
+              <div className="notes-grid">
+                {notes.length === 0 ? (
+                  <div className="empty-state-card" style={{ background: 'var(--surface-mid)', border: '1px dashed var(--border-soft)', padding: '6rem', borderRadius: '40px', gridColumn: '1/-1', textAlign: 'center' }}>
+                    <Sparkles size={48} color="var(--accent-primary)" style={{ marginBottom: '2rem' }} />
+                    <p style={{ fontSize: '1.6rem', color: 'var(--text-main)', maxWidth: '450px', margin: '0 auto 3rem', fontWeight: 600, fontFamily: 'Caveat, cursive' }}>{motivation}</p>
+                    <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}><Plus size={20} /> Crear Primera Nota</button>
+                  </div>
+                ) : notes
+                  .filter(n => activeCategory === 'Todas' || n.category === activeCategory)
+                  .sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || new Date(b.date) - new Date(a.date))
+                  .map(note => (
+                    <div key={note.id} className={`note-card ${note.pinned ? 'pinned' : ''}`} onClick={() => { setEditingNote(note.id); setForm(note); setIsModalOpen(true); }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative' }}>
+                        <h3 style={{ paddingRight: '2rem' }}>{note.title || 'Borrador'}</h3>
+                        {note.pinned && <Pin size={16} className="pin-indicator" fill="var(--accent-primary)" />}
+                      </div>
+                      <div style={{ margin: '1rem 0', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <span className="category-chip" style={{ color: 'var(--accent-primary)', fontSize: '0.6rem' }}>{note.category || 'General'}</span>
+                      </div>
+                      <p style={{ display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden', color: 'var(--text-main)' }}>{note.content}</p>
+                      <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: 0.3, fontSize: '0.8rem', fontWeight: 800, paddingTop: '1.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          {note.location && <><MapPin size={12} /> {note.location}</>}
+                        </div>
+                        <div>{note.date}</div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
             </div>
-          </div>
-        ) : (
-          <CalendarView
-            date={calDate}
-            setDate={setCalDate}
-            notes={notes}
-            selectedDay={selectedCalDay}
-            setSelectedDay={setSelectedCalDay}
-            onDayClick={(date) => {
-              setForm({ title: '', content: '', date, category: 'General', pinned: false });
-              setEditingNote(null);
-              setIsModalOpen(true);
-            }}
-          />
-        )}
+          ) : (
+            <CalendarView
+              date={calDate}
+              setDate={setCalDate}
+              notes={notes}
+              selectedDay={selectedCalDay}
+              setSelectedDay={setSelectedCalDay}
+              onDayClick={(date) => {
+                setForm({ title: '', content: '', date, category: 'General', pinned: false });
+                setEditingNote(null);
+                setIsModalOpen(true);
+              }}
+            />
+          )}
+        </div>
       </main>
 
       <button className="fab" onClick={() => { setEditingNote(null); setForm({ title: '', content: '', date: new Date().toISOString().split('T')[0], category: 'General', pinned: false }); setIsModalOpen(true); }}>
