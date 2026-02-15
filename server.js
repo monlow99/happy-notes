@@ -60,13 +60,31 @@ app.post('/api/profiles', (req, res) => {
 
 app.post('/api/login', (req, res) => {
     const { id, pin } = req.body;
+    console.log(`🔐 Intento de login para ID: ${id}`);
     db.get('SELECT * FROM users WHERE id = ? AND pin = ?', [id, pin], (err, row) => {
-        if (err) return res.status(500).json({ error: err.message });
+        if (err) {
+            console.error('❌ Error en DB durante login:', err);
+            return res.status(500).json({ error: err.message });
+        }
         if (row) {
+            console.log(`✅ Login exitoso: ${row.name}`);
             res.json({ success: true, user: { id: row.id, name: row.name, avatar: row.avatar } });
         } else {
-            res.status(401).json({ success: false, message: 'PIN incorrecto' });
+            console.log(`⚠️ Login fallido para ID: ${id}`);
+            res.status(401).json({ success: false, message: 'ID o PIN incorrecto' });
         }
+    });
+});
+
+app.delete('/api/profiles/:userId', (req, res) => {
+    const { userId } = req.params;
+    db.serialize(() => {
+        db.run('DELETE FROM notes WHERE user_id = ?', [userId]);
+        db.run('DELETE FROM users WHERE id = ?', [userId], (err) => {
+            if (err) return res.status(500).json({ error: err.message });
+            console.log(`🗑️ Perfil eliminado: ${userId}`);
+            res.json({ message: 'Perfil y notas eliminados' });
+        });
     });
 });
 

@@ -21,7 +21,7 @@ import {
 import './index.css'
 
 const encrypt = (text) => btoa(`salt_${text}_secure`)
-const API_URL = `http://${window.location.hostname}:3001`
+// Note: Using relative paths as configured in vite.config.js proxy
 
 const MOTIVACIONES = [
   "¿Qué gran idea tienes hoy?",
@@ -150,7 +150,7 @@ function App() {
   useEffect(() => {
     const fetchProfiles = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/profiles`);
+        const res = await fetch(`/api/profiles`);
         const data = await res.json();
         setProfiles(data);
       } catch (e) { console.error("Error cargando perfiles:", e); }
@@ -191,7 +191,7 @@ function App() {
     if (currentUser) {
       const syncNotes = async () => {
         try {
-          await fetch(`${API_URL}/api/notes/${currentUser.id}/sync`, {
+          await fetch(`/api/notes/${currentUser.id}/sync`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ notes })
@@ -226,7 +226,7 @@ function App() {
     }
 
     try {
-      await fetch(`${API_URL}/api/profiles`, {
+      await fetch(`/api/profiles`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newProfile)
@@ -243,10 +243,10 @@ function App() {
     const targetId = isLoginID ? loginIdInput : selectedUser?.id
 
     try {
-      const res = await fetch(`${API_URL}/api/login`, {
+      const res = await fetch(`/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: targetId, pin: hashed })
+        body: JSON.stringify({ id: targetId?.trim(), pin: hashed })
       });
       const data = await res.json();
       if (data.success) {
@@ -492,11 +492,14 @@ function App() {
                   setTimeout(() => setSettingsStatus(''), 4000)
                 }
               }}><Save size={18} /> Guardar Cambios</button>
-              <button className="btn btn-secondary" style={{ width: '100%', color: 'var(--error)' }} onClick={() => {
+              <button className="btn btn-secondary" style={{ width: '100%', color: 'var(--error)' }} onClick={async () => {
                 if (window.confirm('¿Eliminar perfil y todos sus datos?')) {
-                  const updated = profiles.filter(p => p.id !== currentUser.id)
-                  localStorage.removeItem(`happy-notes-${currentUser.id}`)
-                  setProfiles(updated); setCurrentUser(null); setSelectedUser(null);
+                  try {
+                    await fetch(`/api/profiles/${currentUser.id}`, { method: 'DELETE' });
+                    const updated = profiles.filter(p => p.id !== currentUser.id)
+                    localStorage.removeItem(`happy-notes-${currentUser.id}`)
+                    setProfiles(updated); setCurrentUser(null); setSelectedUser(null);
+                  } catch (e) { alert("Error al eliminar perfil del servidor."); }
                 }
               }}><Trash2 size={18} /> Eliminar Cuenta</button>
               {settingsStatus && <p style={{ marginTop: '1.5rem', textAlign: 'center', color: 'var(--accent-primary)', fontWeight: 800 }}>{settingsStatus}</p>}
