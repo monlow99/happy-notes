@@ -58,7 +58,7 @@ body {
   filter: blur(40px);
 }
 
-/* 🔐 Authentic Access Design (Symmetry Focus) */
+/* 🔐 Authentic Access Design (Perfect Symmetry) */
 .login-container {
   height: 100vh;
   display: flex;
@@ -74,10 +74,14 @@ body {
   border-radius: var(--radius-xl);
   padding: 4.5rem;
   width: 100%;
-  max-width: 520px;
+  max-width: 540px;
   text-align: center;
   box-shadow: 0 50px 100px rgba(0, 0, 0, 0.6);
   animation: entrance 1s var(--ease-soft) forwards;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Center all items inside card */
 }
 
 @keyframes entrance {
@@ -103,16 +107,27 @@ body {
 }
 
 /* 🕒 Status Banner Unified */
+.status-container {
+  width: 100%;
+  margin: 2rem 0;
+}
+
 .status-bar-unit {
   background: var(--surface-bright);
   border: 1px solid var(--border-soft);
   border-radius: 18px;
   padding: 1.2rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
+  text-align: center;
+  /* Centered for Login */
+}
+
+.sidebar .status-bar-unit {
   text-align: left;
+  /* Keep Left for Sidebar */
 }
 
 .unit-main {
@@ -129,7 +144,33 @@ body {
   color: var(--accent-primary);
 }
 
-/* 🎮 RESTORED PREMIUM BUTTONS (User Favorite) */
+.auth-info-banner {
+  background: var(--surface-bright);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  padding: 0.8rem 1.5rem;
+  margin-bottom: 2.5rem;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+  width: auto;
+}
+
+.profile-scroll {
+  width: 100%;
+  justify-content: center;
+}
+
+.profile-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 🎮 RESTORED PREMIUM BUTTONS */
 .btn {
   padding: 1.2rem 2.5rem;
   border-radius: 20px;
@@ -156,10 +197,6 @@ body {
   box-shadow: 0 20px 40px rgba(139, 92, 246, 0.4);
 }
 
-.btn-primary:active {
-  transform: translateY(0) scale(0.98);
-}
-
 .btn-secondary {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border-soft);
@@ -167,79 +204,11 @@ body {
   backdrop-filter: blur(10px);
 }
 
-.btn-secondary:hover {
-  background: var(--surface-bright);
-  border-color: var(--border-active);
-  transform: translateY(-2px);
-}
-
-/* ✨ RESTORED FAB */
-.fab {
-  position: fixed;
-  bottom: 4.5rem;
-  right: 4.5rem;
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  background: var(--accent-gradient);
-  color: #fff;
-  border: none;
-  font-size: 2rem;
-  font-weight: 800;
-  cursor: pointer;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-  transition: var(--transition);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-}
-
-.fab:hover {
-  transform: scale(1.15) rotate(90deg);
-  box-shadow: 0 30px 60px var(--accent-glow);
-}
-
-/* 🏛️ Unified Sidebar Workspace */
-.app-layout {
-  display: flex;
-  height: 100vh;
-}
-
-.sidebar {
-  width: 280px;
-  background: var(--surface-low);
-  backdrop-filter: blur(40px);
-  border-right: 1px solid var(--border-soft);
-  padding: 3rem 1.5rem;
-  display: flex;
-  flex-direction: column;
-}
-
-.nav-link {
-  padding: 0.85rem 1.25rem;
-  border-radius: 16px;
-  color: var(--text-dim);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 1.2rem;
-  transition: var(--transition);
-  margin-bottom: 0.5rem;
-}
-
-.nav-link.active {
-  background: var(--surface-bright);
-  color: #fff;
-  border: 1px solid var(--border-soft);
-}
-
 /* 📅 UNIFIED SOVEREIGN CALENDAR */
 .calendar-view {
   display: grid;
   grid-template-columns: 1fr 340px;
   gap: 3rem;
-  animation: entrance 0.8s var(--ease-soft);
 }
 
 .calendar-grid-container {
@@ -257,7 +226,7 @@ body {
 }
 
 .calendar-day {
-  aspect-ratio: 1;
+  aspect-ratio: 1/1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -266,107 +235,44 @@ body {
   transition: var(--transition);
   font-weight: 700;
   font-size: 1.15rem;
-  position: relative;
   background: rgba(255, 255, 255, 0.02);
-  border: 1px solid transparent;
 }
 
 .calendar-day:hover:not(.empty) {
   background: var(--surface-bright);
-  border-color: var(--border-active);
   transform: scale(1.08) translateY(-4px);
-  z-index: 5;
 }
 
 .calendar-day.selected {
   background: var(--accent-gradient) !important;
   color: #fff;
-  box-shadow: 0 15px 30px var(--accent-glow);
-  transform: scale(1.1);
-  border-color: transparent;
+  box-shadow: 0 0 25px var(--accent-glow);
 }
 
 .calendar-day.today {
   border: 2px solid var(--accent-secondary);
-  color: var(--accent-secondary);
 }
 
-.calendar-day.empty {
-  cursor: default;
-  background: transparent;
-}
-
-.day-indicator {
-  position: absolute;
-  bottom: 8px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent-primary);
-  opacity: 0.8;
-}
-
-/* 🖼️ Content Canvas */
-.content-area {
-  flex: 1;
-  padding: 4rem 6rem;
-  overflow-y: auto;
-}
-
-.section-title {
-  font-size: 4rem;
-  font-weight: 800;
-  letter-spacing: -0.07em;
-  margin-bottom: 4rem;
-}
-
-/* 📇 Note Cards Unified */
-.note-card {
-  background: var(--surface-mid);
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-xl);
-  padding: 3rem;
-  transition: var(--transition);
-  cursor: pointer;
-}
-
-.note-card:hover {
-  transform: translateY(-8px);
-  border-color: var(--border-active);
-  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.4);
-}
-
-.form-input {
-  width: 100%;
-  background: var(--surface-bright);
-  border: 1px solid var(--border-soft);
-  border-radius: 18px;
-  padding: 1.25rem 1.5rem;
-  color: #fff;
-  font-size: 1rem;
-  transition: var(--transition);
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-}
-
-@media (max-width: 1200px) {
+/* 🚀 Responsive */
+@media (max-width: 1100px) {
   .calendar-view {
     grid-template-columns: 1fr;
+  }
+
+  .day-detail {
+    display: none;
   }
 }
 
 @media (max-width: 1024px) {
   .sidebar {
     width: 90px;
-    padding: 2rem 0.75rem;
+    padding: 2rem 0.5rem;
   }
 
   .sidebar-title,
   .nav-text,
-  .status-bar-unit {
+  .status-container {
     display: none;
   }
 }
