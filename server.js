@@ -41,9 +41,10 @@ db.serialize(() => {
     FOREIGN KEY (user_id) REFERENCES users (id)
   )`, (err) => {
         if (!err) {
-            db.run("ALTER TABLE notes ADD COLUMN category TEXT", (err) => {
-                // Ignore error if column already exists
-            });
+            // Migraciones para bases de datos existentes
+            db.run("ALTER TABLE notes ADD COLUMN category TEXT", () => { });
+            db.run("ALTER TABLE notes ADD COLUMN location TEXT", () => { });
+            db.run("ALTER TABLE notes ADD COLUMN pinned BOOLEAN DEFAULT 0", () => { });
         }
     });
 });
