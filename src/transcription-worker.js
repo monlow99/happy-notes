@@ -38,19 +38,28 @@ self.onmessage = async (event) => {
 
         if (action === 'encode-mp3') {
             // Lógica de codificación MP3 usando lamejs
-            // Intentamos cargar lamejs si se pasó el código
             if (lamejsCode && !self.lamejs) {
                 try {
                     const blob = new Blob([lamejsCode], { type: 'application/javascript' });
                     importScripts(URL.createObjectURL(blob));
-                } catch (e) { console.error("Error cargando lamejs", e); }
+                } catch (e) { console.error("Error cargando lamejs local", e); }
+            }
+
+            // Fallback a CDN si no se cargó
+            if (!self.lamejs) {
+                try {
+                    importScripts('https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js');
+                } catch (e) {
+                    throw new Error("No se pudo cargar la librería de audio MP3");
+                }
             }
 
             if (self.lamejs) {
+                self.postMessage({ status: 'processing', message: 'Comprimiendo audio MP3...' });
                 const mp3encoder = new self.lamejs.Mp3Encoder(1, sampleRate || 44100, 128);
                 const samples = new Int16Array(audio.length);
                 for (let i = 0; i < audio.length; i++) {
-                    samples[i] = audio[i] * 32767;
+                    samples[i] = Math.max(-32768, Math.min(32767, audio[i] * 32768));
                 }
                 const mp3Data = [];
                 const mp3buf = mp3encoder.encodeBuffer(samples);

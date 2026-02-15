@@ -185,6 +185,7 @@ function App() {
   const [transcriptionStatus, setTranscriptionStatus] = useState("");
   const workerRef = useRef(null);
   const mediaRecorderRef = useRef(null);
+  const transcriptionIdRef = useRef(null);
 
   useEffect(() => {
     // Inicializar worker local
@@ -194,31 +195,52 @@ function App() {
       const { status, message, text, blob } = e.data;
       if (status === 'ready') setIsAIReady(true);
 
-      if (status === 'complete') {
-        setForm(prev => ({ ...prev, content: (prev.content + " " + text).trim() }));
+      const targetId = transcriptionIdRef.current;
+
+      if (status === 'complete' && text) {
+        setForm(prev => prev.id === targetId ? { ...prev, content: (prev.content + " " + text).trim() } : prev);
+        setNotes(prev => prev.map(n => n.id === targetId ? { ...n, content: (n.content + " " + text).trim() } : n));
+        setHasUnsavedChanges(true);
         setTranscriptionStatus("");
       } else if (status === 'mp3-complete') {
+        console.log("Audio MP3 recibido del worker");
         const base64Audio = await fileToBase64(blob);
-        setForm(prev => ({
+        const audioName = `Nota_Voz_${new Date().getTime()}.mp3`;
+
+        setForm(prev => prev.id === targetId ? {
           ...prev,
           attachment: base64Audio,
-          attachmentName: `Nota_Voz_${new Date().getTime()}.mp3`,
+          attachmentName: audioName,
           type: 'voice'
-        }));
+        } : prev);
+
+        setNotes(prev => prev.map(n => n.id === targetId ? {
+          ...n,
+          attachment: base64Audio,
+          attachmentName: audioName,
+          type: 'voice'
+        } : n));
+
         setHasUnsavedChanges(true);
+      } else if (status === 'error') {
+        console.error("AI Worker Error:", message);
+        setTranscriptionStatus("Error en IA: " + message);
+        setTimeout(() => setTranscriptionStatus(""), 3000);
       } else {
         setTranscriptionStatus(message || "");
       }
     };
 
-    // Precarga inmediata al iniciar la app
+    // Precarga inmediata al iniciar la app usando el archivo en public/
     const fetchLame = async () => {
       try {
-        const res = await fetch('/node_modules/lamejs/lame.min.js');
+        const res = await fetch('/lame.min.js');
+        if (!res.ok) throw new Error("File not found");
         const code = await res.text();
         workerRef.current.postMessage({ action: 'load', lamejsCode: code });
       } catch (e) {
-        workerRef.current.postMessage({ action: 'load' });
+        console.warn("Could not load local lamejs, falling back to CDN", e);
+        workerRef.current.postMessage({ action: 'load' }); // Intentar cargar sin lame o esperar
       }
     };
     fetchLame();
@@ -238,6 +260,11 @@ function App() {
       return;
     }
     try {
+      // Asignar ID temporal si es nueva nota, o usar el actual
+      const currentId = form.id || Date.now().toString();
+      if (!form.id) setForm(prev => ({ ...prev, id: currentId }));
+      transcriptionIdRef.current = currentId;
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const recorder = new MediaRecorder(stream);
       const chunks = [];
