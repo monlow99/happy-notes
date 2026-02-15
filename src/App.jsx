@@ -190,17 +190,38 @@ function App() {
     // Inicializar worker local
     workerRef.current = new Worker(new URL('./transcription-worker.js', import.meta.url), { type: 'module' });
 
-    workerRef.current.onmessage = (e) => {
-      const { status, message, text } = e.data;
+    workerRef.current.onmessage = async (e) => {
+      const { status, message, text, blob } = e.data;
       if (status === 'ready') setIsAIReady(true);
 
       if (status === 'complete') {
         setForm(prev => ({ ...prev, content: (prev.content + " " + text).trim() }));
         setTranscriptionStatus("");
+      } else if (status === 'mp3-complete') {
+        const base64Audio = await fileToBase64(blob);
+        setForm(prev => ({
+          ...prev,
+          attachment: base64Audio,
+          attachmentName: `Nota_Voz_${new Date().getTime()}.mp3`,
+          type: 'voice'
+        }));
+        setHasUnsavedChanges(true);
       } else {
         setTranscriptionStatus(message || "");
       }
     };
+
+    // Precarga inmediata al iniciar la app
+    const fetchLame = async () => {
+      try {
+        const res = await fetch('/node_modules/lamejs/lame.min.js');
+        const code = await res.text();
+        workerRef.current.postMessage({ action: 'load', lamejsCode: code });
+      } catch (e) {
+        workerRef.current.postMessage({ action: 'load' });
+      }
+    };
+    fetchLame();
 
     return () => workerRef.current.terminate();
   }, []);
@@ -224,16 +245,6 @@ function App() {
       recorder.ondataavailable = (e) => chunks.push(e.data);
       recorder.onstop = async () => {
         const audioBlob = new Blob(chunks, { type: 'audio/wav' });
-
-        // Guardar también el audio como adjunto
-        const base64Audio = await fileToBase64(audioBlob);
-        setForm(prev => ({
-          ...prev,
-          attachment: prev.attachment || base64Audio,
-          attachmentName: prev.attachmentName || `Nota_Voz_${new Date().getTime()}.wav`,
-          type: prev.type === 'note' ? 'voice' : prev.type
-        }));
-
         processAudioForTranscription(audioBlob);
       };
 
@@ -258,9 +269,16 @@ function App() {
     const arrayBuffer = await blob.arrayBuffer();
     const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
 
-    // Convertir a monoaural (si es necesario) y Float32Array
     const audioData = audioBuffer.getChannelData(0);
+    // Transcribir
     workerRef.current.postMessage({ audio: audioData, language: 'spanish' });
+
+    // Codificar a MP3 (128kbps)
+    workerRef.current.postMessage({
+      action: 'encode-mp3',
+      audio: audioData,
+      sampleRate: 16000
+    });
   };
 
   const pinInputRef = useRef(null)
