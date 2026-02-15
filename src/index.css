@@ -455,7 +455,7 @@ body {
   font-size: clamp(2.5rem, 8vw, 5rem);
   font-weight: 800;
   font-family: 'Caveat', cursive;
-  margin-bottom: 3rem;
+  margin-bottom: 1.5rem;
 }
 
 /* 📝 Notes Grid */
@@ -721,22 +721,22 @@ body {
 /* 📅 Sovereign Calendar Design */
 .calendar-view {
   display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 3rem;
+  grid-template-columns: 1fr 340px;
+  gap: 1.5rem;
   animation: entrance 0.8s var(--ease-premium);
 }
 
 .calendar-grid-container {
   background: var(--surface-mid);
-  padding: 3.5rem;
-  border-radius: 40px;
+  padding: 2rem;
+  border-radius: 32px;
   border: 1px solid var(--border-soft);
 }
 
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 12px;
+  gap: 8px;
 }
 
 .calendar-day {
@@ -780,8 +780,8 @@ body {
 
 .day-detail {
   background: var(--surface-mid);
-  padding: 4rem 3rem;
-  border-radius: 40px;
+  padding: 2.5rem 2rem;
+  border-radius: 32px;
   border: 1px solid var(--border-soft);
   display: flex;
   flex-direction: column;
