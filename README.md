@@ -52,9 +52,12 @@
    **Alternativamente**, puedes ejecutarlos por separado:
    - Terminal 1 (Base de Datos): `npm run server`
    - Terminal 2 (Frontend): `npm run dev`
+   
    *Nota: Al usar HTTPS local, el navegador te pedirá confirmar el certificado de seguridad. Haz clic en "Avanzado" y "Continuar".*
 
-4. **Acceso**: Abre [https://localhost:5173/](https://localhost:5173/) en tu navegador.
+4. **Acceso**: 
+   - **Local**: [https://localhost:5174/](https://localhost:5174/)
+   - **Desde otros dispositivos**: `https://[IP-DE-TU-PC]:5174/`
 
 ## 🛠️ Stack Tecnológico
 

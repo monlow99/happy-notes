@@ -762,15 +762,11 @@ body.is-mobile .status-container {
   grid-template-columns: 1fr 280px;
   gap: 1.25rem;
   animation: entrance 0.8s var(--ease-premium);
-  min-height: 0;
 }
 
 .calendar-main {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 0;
-  /* Important for flex child overflow */
 }
 
 .calendar-grid-container {
@@ -778,23 +774,17 @@ body.is-mobile .status-container {
   padding: 1.5rem;
   border-radius: 24px;
   border: 1px solid var(--border-soft);
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
 }
 
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 8px;
-  flex: 1;
-  align-content: space-around;
 }
 
 .calendar-day {
   min-height: 50px;
-  padding: 1rem 0;
+  padding: 0.8rem 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -834,12 +824,12 @@ body.is-mobile .status-container {
 
 .day-detail {
   background: var(--surface-mid);
-  padding: 3.5rem 1.5rem 2rem;
-  /* Increased top padding */
+  padding: 2rem 1.5rem;
   border-radius: 24px;
   border: 1px solid var(--border-soft);
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
 }
 
 .modal-overlay {
