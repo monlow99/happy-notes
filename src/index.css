@@ -860,21 +860,30 @@ body.is-mobile .status-container {
 }
 
 .logout-edge-btn {
-  width: 30px;
-  height: 30px;
-  border-radius: 10px;
-  color: #ef4444;
+  width: calc(38px * var(--ui-scale));
+  height: calc(38px * var(--ui-scale));
+  border-radius: calc(12px * var(--ui-scale));
   display: flex;
   align-items: center;
   justify-content: center;
+  background: var(--surface-mid);
+  border: 1px solid var(--border-soft);
+  color: var(--text-dim);
   cursor: pointer;
   transition: var(--transition);
 }
 
 .logout-edge-btn:hover {
-  background: #ef4444;
+  background: var(--surface-bright);
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px var(--accent-glow);
+}
+
+.logout-edge-btn.active {
+  background: var(--accent-primary);
   color: #fff;
-  transform: scale(1.05);
 }
 
 /* 🌦️ Weather Trigger Button */

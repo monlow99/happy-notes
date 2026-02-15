@@ -556,31 +556,6 @@ function App() {
   return (
     <div className="app-layout">
       <div className="bg-mesh"></div>
-      <header className="app-header">
-        <div className="content-wrapper" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', height: '100%', maxWidth: '1800px' }}>
-          <div className="header-user-badge">
-            <button
-              className="logout-edge-btn"
-              onClick={() => {
-                const currentIndex = THEMES.findIndex(t => t.id === activeTheme);
-                const nextIndex = (currentIndex + 1) % THEMES.length;
-                setActiveTheme(THEMES[nextIndex].id);
-              }}
-              title="Siguiente Tema"
-            >
-              <Moon size={18 * uiScale} fill={THEMES.find(t => t.id === activeTheme)?.isDark ? "currentColor" : "none"} />
-            </button>
-            <div className="user-profile-tag" onClick={() => setIsSettingsOpen(true)}>
-              <div className="user-avatar-mini">{currentUser.avatar}</div>
-              <span className="user-name-tag">{currentUser.name}</span>
-            </div>
-            <button className="logout-edge-btn" onClick={() => { setCurrentUser(null); setSelectedUser(null); localStorage.removeItem('happy-session'); }} title="Cerrar Sesión">
-              <LogOut size={18 * uiScale} />
-            </button>
-          </div>
-        </div>
-      </header>
-
       <aside className="sidebar">
         <h2 className="sidebar-title">Happy Notes.</h2>
         <StatusApplets />
@@ -597,167 +572,194 @@ function App() {
         </nav>
       </aside>
 
-      <main className="content-area">
-        <div className="content-wrapper">
-          {isSettingsOpen ? (
-            <div style={{ animation: 'entrance 0.8s var(--ease-premium)' }}>
-              <h1 className="section-title">Ajustes</h1>
-              <div className="note-card" style={{ maxWidth: '600px' }}>
-                <div style={{ marginBottom: '2.5rem', padding: '1.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '16px', border: '1px solid var(--border-soft)' }}>
-                  <label className="unit-sub" style={{ display: 'block', marginBottom: '0.4rem', opacity: 0.6 }}>Tu ID de Sincronización</label>
-                  <code style={{ fontSize: '1.1rem', color: 'var(--accent-primary)', fontWeight: 800, wordBreak: 'break-all' }}>{currentUser.id}</code>
-                  <p style={{ fontSize: '0.75rem', marginTop: '0.8rem', opacity: 0.5 }}>Usa este ID para iniciar sesión desde otros dispositivos.</p>
-                </div>
+      <div className="main-container" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+        <header className="app-header">
+          <div className="content-wrapper" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', height: '100%', maxWidth: '1800px' }}>
+            <div className="header-user-badge">
+              <button
+                className="logout-edge-btn"
+                onClick={() => {
+                  const currentIndex = THEMES.findIndex(t => t.id === activeTheme);
+                  const nextIndex = (currentIndex + 1) % THEMES.length;
+                  setActiveTheme(THEMES[nextIndex].id);
+                }}
+                title="Siguiente Tema"
+              >
+                <Moon size={18 * uiScale} fill={THEMES.find(t => t.id === activeTheme)?.isDark ? "currentColor" : "none"} />
+              </button>
+              <div className="user-profile-tag" onClick={() => setIsSettingsOpen(true)}>
+                <div className="user-avatar-mini">{currentUser.avatar}</div>
+                <span className="user-name-tag">{currentUser.name}</span>
+              </div>
+              <button className="logout-edge-btn" onClick={() => { setCurrentUser(null); setSelectedUser(null); localStorage.removeItem('happy-session'); }} title="Cerrar Sesión">
+                <LogOut size={18 * uiScale} />
+              </button>
+            </div>
+          </div>
+        </header>
 
-                <div style={{ marginBottom: '2.5rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h3 style={{ margin: 0 }}>Escalado de Interfaz</h3>
-                    <span className="category-chip" style={{ color: 'var(--accent-primary)' }}>{Math.round(uiScale * 100)}%</span>
+        <main className="content-area">
+          <div className="content-wrapper">
+            {isSettingsOpen ? (
+              <div style={{ animation: 'entrance 0.8s var(--ease-premium)' }}>
+                <h1 className="section-title">Ajustes</h1>
+                <div className="note-card" style={{ maxWidth: '600px' }}>
+                  <div style={{ marginBottom: '2.5rem', padding: '1.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '16px', border: '1px solid var(--border-soft)' }}>
+                    <label className="unit-sub" style={{ display: 'block', marginBottom: '0.4rem', opacity: 0.6 }}>Tu ID de Sincronización</label>
+                    <code style={{ fontSize: '1.1rem', color: 'var(--accent-primary)', fontWeight: 800, wordBreak: 'break-all' }}>{currentUser.id}</code>
+                    <p style={{ fontSize: '0.75rem', marginTop: '0.8rem', opacity: 0.5 }}>Usa este ID para iniciar sesión desde otros dispositivos.</p>
                   </div>
-                  <input
-                    type="range"
-                    min="0.3"
-                    max="1.5"
-                    step="0.05"
-                    value={uiScale}
-                    onChange={(e) => setUiScale(parseFloat(e.target.value))}
-                    style={{ width: '100%', accentColor: 'var(--accent-primary)', height: '6px', cursor: 'pointer' }}
-                  />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', fontSize: '0.7rem', opacity: 0.4, fontWeight: 800 }}>
-                    <span>MIN (30%)</span>
-                    <span>NORMAL</span>
-                    <span>MAX (150%)</span>
-                  </div>
-                </div>
 
-                <div style={{ marginBottom: '3rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                    <h3 style={{ margin: 0 }}>Colección de Temas</h3>
-                    <button className="btn btn-secondary" style={{ padding: '0.4rem 1rem', fontSize: '0.7rem' }} onClick={applyRandomTheme}>
-                      <Sparkles size={14} /> TEMA ALEATORIO
+                  <div style={{ marginBottom: '2.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                      <h3 style={{ margin: 0 }}>Escalado de Interfaz</h3>
+                      <span className="category-chip" style={{ color: 'var(--accent-primary)' }}>{Math.round(uiScale * 100)}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0.3"
+                      max="1.5"
+                      step="0.05"
+                      value={uiScale}
+                      onChange={(e) => setUiScale(parseFloat(e.target.value))}
+                      style={{ width: '100%', accentColor: 'var(--accent-primary)', height: '6px', cursor: 'pointer' }}
+                    />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', fontSize: '0.7rem', opacity: 0.4, fontWeight: 800 }}>
+                      <span>MIN (30%)</span>
+                      <span>NORMAL</span>
+                      <span>MAX (150%)</span>
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: '3rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                      <h3 style={{ margin: 0 }}>Colección de Temas</h3>
+                      <button className="btn btn-secondary" style={{ padding: '0.4rem 1rem', fontSize: '0.7rem' }} onClick={applyRandomTheme}>
+                        <Sparkles size={14} /> TEMA ALEATORIO
+                      </button>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '0.8rem' }}>
+                      {THEMES.map(t => (
+                        <div
+                          key={t.id}
+                          onClick={() => setActiveTheme(t.id)}
+                          className={`note-card ${activeTheme === t.id ? 'active' : ''}`}
+                          style={{
+                            padding: '1rem',
+                            cursor: 'pointer',
+                            textAlign: 'center',
+                            border: activeTheme === t.id ? '2px solid' + t.color : '1px solid var(--border-soft)',
+                            background: activeTheme === t.id ? 'rgba(0,0,0,0.1)' : 'var(--surface-bright)',
+                            transition: 'var(--transition)'
+                          }}
+                        >
+                          <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: t.color, margin: '0 auto 0.8rem' }}></div>
+                          <div style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase' }}>{t.name}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <h3 style={{ marginBottom: '2rem' }}>Seguridad del Perfil</h3>
+                  <div style={{ marginBottom: '2rem' }}>
+                    <label className="unit-sub" style={{ display: 'block', marginBottom: '0.8rem' }}>Nuevo PIN</label>
+                    <input type="password" maxLength="4" className="form-input" placeholder="4 dígitos" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+                  </div>
+                  <button className="btn btn-primary" style={{ width: '100%', marginBottom: '1.2rem' }} onClick={() => {
+                    if (newPassword.length === 4) {
+                      setProfiles(profiles.map(p => p.id === currentUser.id ? { ...p, password: encrypt(newPassword) } : p))
+                      setSettingsStatus('Perfil actualizado con éxito.')
+                      setTimeout(() => setSettingsStatus(''), 4000)
+                    }
+                  }}><Save size={18} /> Guardar Cambios</button>
+                  <button className="btn btn-secondary" style={{ width: '100%', marginBottom: '1.2rem' }} onClick={() => {
+                    const data = JSON.stringify({ user: currentUser, notes }, null, 2);
+                    const blob = new Blob([data], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `happy-notes-backup-${currentUser.id}.json`;
+                    a.click();
+                  }}><Download size={18} /> Exportar Toda Mi Info (JSON)</button>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.2rem' }}>
+                    <button className="btn btn-secondary" onClick={exportAllToExcel}>
+                      <FileText size={18} color="#22c55e" /> Reporte Excel
+                    </button>
+                    <button className="btn btn-secondary" onClick={exportAllToPDFReport}>
+                      <Download size={18} color="#ef4444" /> Reporte PDF (Completo)
                     </button>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '0.8rem' }}>
-                    {THEMES.map(t => (
-                      <div
-                        key={t.id}
-                        onClick={() => setActiveTheme(t.id)}
-                        className={`note-card ${activeTheme === t.id ? 'active' : ''}`}
-                        style={{
-                          padding: '1rem',
-                          cursor: 'pointer',
-                          textAlign: 'center',
-                          border: activeTheme === t.id ? '2px solid' + t.color : '1px solid var(--border-soft)',
-                          background: activeTheme === t.id ? 'rgba(0,0,0,0.1)' : 'var(--surface-bright)',
-                          transition: 'var(--transition)'
-                        }}
-                      >
-                        <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: t.color, margin: '0 auto 0.8rem' }}></div>
-                        <div style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase' }}>{t.name}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
 
-                <h3 style={{ marginBottom: '2rem' }}>Seguridad del Perfil</h3>
-                <div style={{ marginBottom: '2rem' }}>
-                  <label className="unit-sub" style={{ display: 'block', marginBottom: '0.8rem' }}>Nuevo PIN</label>
-                  <input type="password" maxLength="4" className="form-input" placeholder="4 dígitos" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+                  <button className="btn btn-secondary" style={{ width: '100%', color: 'var(--error)' }} onClick={() => {
+                    if (window.confirm('¿Eliminar perfil y todos sus datos?')) {
+                      const updated = profiles.filter(p => p.id !== currentUser.id)
+                      localStorage.removeItem(`happy-notes-${currentUser.id}`)
+                      setProfiles(updated); setCurrentUser(null); setSelectedUser(null);
+                    }
+                  }}><Trash2 size={18} /> Eliminar Cuenta</button>
+                  {settingsStatus && <p style={{ marginTop: '1.5rem', textAlign: 'center', color: 'var(--accent-primary)', fontWeight: 800 }}>{settingsStatus}</p>}
                 </div>
-                <button className="btn btn-primary" style={{ width: '100%', marginBottom: '1.2rem' }} onClick={() => {
-                  if (newPassword.length === 4) {
-                    setProfiles(profiles.map(p => p.id === currentUser.id ? { ...p, password: encrypt(newPassword) } : p))
-                    setSettingsStatus('Perfil actualizado con éxito.')
-                    setTimeout(() => setSettingsStatus(''), 4000)
-                  }
-                }}><Save size={18} /> Guardar Cambios</button>
-                <button className="btn btn-secondary" style={{ width: '100%', marginBottom: '1.2rem' }} onClick={() => {
-                  const data = JSON.stringify({ user: currentUser, notes }, null, 2);
-                  const blob = new Blob([data], { type: 'application/json' });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `happy-notes-backup-${currentUser.id}.json`;
-                  a.click();
-                }}><Download size={18} /> Exportar Toda Mi Info (JSON)</button>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.2rem' }}>
-                  <button className="btn btn-secondary" onClick={exportAllToExcel}>
-                    <FileText size={18} color="#22c55e" /> Reporte Excel
-                  </button>
-                  <button className="btn btn-secondary" onClick={exportAllToPDFReport}>
-                    <Download size={18} color="#ef4444" /> Reporte PDF (Completo)
-                  </button>
-                </div>
-
-                <button className="btn btn-secondary" style={{ width: '100%', color: 'var(--error)' }} onClick={() => {
-                  if (window.confirm('¿Eliminar perfil y todos sus datos?')) {
-                    const updated = profiles.filter(p => p.id !== currentUser.id)
-                    localStorage.removeItem(`happy-notes-${currentUser.id}`)
-                    setProfiles(updated); setCurrentUser(null); setSelectedUser(null);
-                  }
-                }}><Trash2 size={18} /> Eliminar Cuenta</button>
-                {settingsStatus && <p style={{ marginTop: '1.5rem', textAlign: 'center', color: 'var(--accent-primary)', fontWeight: 800 }}>{settingsStatus}</p>}
               </div>
-            </div>
-          ) : view === 'notes' ? (
-            <div style={{ animation: 'entrance 0.8s var(--ease-premium)' }}>
-              <h1 className="section-title">Mis Notas</h1>
+            ) : view === 'notes' ? (
+              <div style={{ animation: 'entrance 0.8s var(--ease-premium)' }}>
+                <h1 className="section-title">Mis Notas</h1>
 
-              <div className="category-filter-bar">
-                {['Todas', ...categories].map(cat => (
-                  <div key={cat} className={`filter-chip ${activeCategory === cat ? 'active' : ''}`} onClick={() => setActiveCategory(cat)}>
-                    {cat}
-                  </div>
-                ))}
-              </div>
-
-              <div className="notes-grid">
-                {notes.length === 0 ? (
-                  <div className="empty-state-card" style={{ background: 'var(--surface-mid)', border: '1px dashed var(--border-soft)', padding: '6rem', borderRadius: '40px', gridColumn: '1/-1', textAlign: 'center' }}>
-                    <Sparkles size={48} color="var(--accent-primary)" style={{ marginBottom: '2rem' }} />
-                    <p style={{ fontSize: '1.6rem', color: 'var(--text-main)', maxWidth: '450px', margin: '0 auto 3rem', fontWeight: 600, fontFamily: 'Caveat, cursive' }}>{motivation}</p>
-                    <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}><Plus size={20} /> Crear Primera Nota</button>
-                  </div>
-                ) : notes
-                  .filter(n => activeCategory === 'Todas' || n.category === activeCategory)
-                  .sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || new Date(b.date) - new Date(a.date))
-                  .map(note => (
-                    <div key={note.id} className={`note-card ${note.pinned ? 'pinned' : ''}`} onClick={() => { setEditingNote(note.id); setForm(note); setIsModalOpen(true); }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative' }}>
-                        <h3 style={{ paddingRight: '2rem' }}>{note.title || 'Borrador'}</h3>
-                        {note.pinned && <Pin size={16} className="pin-indicator" fill="var(--accent-primary)" />}
-                      </div>
-                      <div style={{ margin: '1rem 0', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                        <span className="category-chip" style={{ color: 'var(--accent-primary)', fontSize: '0.6rem' }}>{note.category || 'General'}</span>
-                      </div>
-                      <p style={{ display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden', color: 'var(--text-main)' }}>{note.content}</p>
-                      <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: 0.3, fontSize: '0.8rem', fontWeight: 800, paddingTop: '1.5rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          {note.location && <><MapPin size={12} /> {note.location}</>}
-                        </div>
-                        <div>{note.date}</div>
-                      </div>
+                <div className="category-filter-bar">
+                  {['Todas', ...categories].map(cat => (
+                    <div key={cat} className={`filter-chip ${activeCategory === cat ? 'active' : ''}`} onClick={() => setActiveCategory(cat)}>
+                      {cat}
                     </div>
                   ))}
+                </div>
+
+                <div className="notes-grid">
+                  {notes.length === 0 ? (
+                    <div className="empty-state-card" style={{ background: 'var(--surface-mid)', border: '1px dashed var(--border-soft)', padding: '6rem', borderRadius: '40px', gridColumn: '1/-1', textAlign: 'center' }}>
+                      <Sparkles size={48} color="var(--accent-primary)" style={{ marginBottom: '2rem' }} />
+                      <p style={{ fontSize: '1.6rem', color: 'var(--text-main)', maxWidth: '450px', margin: '0 auto 3rem', fontWeight: 600, fontFamily: 'Caveat, cursive' }}>{motivation}</p>
+                      <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}><Plus size={20} /> Crear Primera Nota</button>
+                    </div>
+                  ) : notes
+                    .filter(n => activeCategory === 'Todas' || n.category === activeCategory)
+                    .sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || new Date(b.date) - new Date(a.date))
+                    .map(note => (
+                      <div key={note.id} className={`note-card ${note.pinned ? 'pinned' : ''}`} onClick={() => { setEditingNote(note.id); setForm(note); setIsModalOpen(true); }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative' }}>
+                          <h3 style={{ paddingRight: '2rem' }}>{note.title || 'Borrador'}</h3>
+                          {note.pinned && <Pin size={16} className="pin-indicator" fill="var(--accent-primary)" />}
+                        </div>
+                        <div style={{ margin: '1rem 0', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          <span className="category-chip" style={{ color: 'var(--accent-primary)', fontSize: '0.6rem' }}>{note.category || 'General'}</span>
+                        </div>
+                        <p style={{ display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden', color: 'var(--text-main)' }}>{note.content}</p>
+                        <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: 0.3, fontSize: '0.8rem', fontWeight: 800, paddingTop: '1.5rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            {note.location && <><MapPin size={12} /> {note.location}</>}
+                          </div>
+                          <div>{note.date}</div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
               </div>
-            </div>
-          ) : (
-            <CalendarView
-              date={calDate}
-              setDate={setCalDate}
-              notes={notes}
-              selectedDay={selectedCalDay}
-              setSelectedDay={setSelectedCalDay}
-              onDayClick={(date) => {
-                setForm({ title: '', content: '', date, category: 'General', pinned: false });
-                setEditingNote(null);
-                setIsModalOpen(true);
-              }}
-            />
-          )}
-        </div>
-      </main>
+            ) : (
+              <CalendarView
+                date={calDate}
+                setDate={setCalDate}
+                notes={notes}
+                selectedDay={selectedCalDay}
+                setSelectedDay={setSelectedCalDay}
+                onDayClick={(date) => {
+                  setForm({ title: '', content: '', date, category: 'General', pinned: false });
+                  setEditingNote(null);
+                  setIsModalOpen(true);
+                }}
+              />
+            )}
+          </div>
+        </main>
+      </div>
 
       <button className="fab" onClick={() => { setEditingNote(null); setForm({ title: '', content: '', date: new Date().toISOString().split('T')[0], category: 'General', pinned: false }); setIsModalOpen(true); }}>
         <Plus size={32} />
