@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  happy-notes:
+    build: .
+    container_name: happy-notes-app
+    ports:
+      - "8080:8080"
+      - "3001:3001"
+    volumes:
+      - ./happy-notes.db:/app/happy-notes.db
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production

@@ -30,6 +30,8 @@
 
 ## 🚀 Instalación y Uso
 
+### Opción 1: Instalación Estándar (Node.js)
+
 1. **Clonar el repositorio**:
    ```bash
    git clone https://github.com/monlow99/happy-notes.git
@@ -56,6 +58,23 @@
 4. **Acceso**: 
    - **Local**: [http://localhost:8080/](http://localhost:8080/)
    - **Desde otros dispositivos**: `http://[IP-DE-TU-PC]:8080/`
+
+### Opción 2: Instalación con Docker 🐳
+
+Si prefieres desplegar Happy Notes en un servidor usando Docker, puedes hacerlo de forma rápida:
+
+1. **Clonar e iniciar con Docker Compose**:
+   ```bash
+   git clone https://github.com/monlow99/happy-notes.git
+   cd happy-notes
+   docker-compose up -d
+   ```
+
+2. **Persistencia**: 
+   El contenedor crea un volumen para el archivo `happy-notes.db`, asegurando que tus notas y perfiles no se pierdan al reiniciar el contenedor.
+
+3. **Acceso**:
+   La aplicación estará disponible en el puerto **8080**.
 
 ## 🛠️ Stack Tecnológico
 
