@@ -60,6 +60,9 @@ function App() {
   const [selectedCalDay, setSelectedCalDay] = useState(new Date().toISOString().split('T')[0])
   const [motivation, setMotivation] = useState(MOTIVACIONES[0])
 
+  const [isLoginID, setIsLoginID] = useState(false)
+  const [loginIdInput, setLoginIdInput] = useState('')
+
   // --- Clock & Weather State ---
   const [time, setTime] = useState(new Date())
   const [weather, setWeather] = useState(null)
@@ -201,7 +204,7 @@ function App() {
   }, [notes, currentUser])
 
   useEffect(() => {
-    if (password.length === 4 && selectedUser) {
+    if (password.length === 4 && (selectedUser || isLoginID)) {
       handleLogin()
     }
   }, [password])
@@ -237,16 +240,19 @@ function App() {
 
   const handleLogin = async () => {
     const hashed = encrypt(password)
+    const targetId = isLoginID ? loginIdInput : selectedUser?.id
+
     try {
       const res = await fetch(`${API_URL}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: selectedUser.id, pin: hashed })
+        body: JSON.stringify({ id: targetId, pin: hashed })
       });
       const data = await res.json();
       if (data.success) {
         setCurrentUser(data.user)
         setPassword(''); setError(false);
+        setIsLoginID(false); setLoginIdInput('');
       } else {
         throw new Error();
       }
@@ -353,7 +359,34 @@ function App() {
               </div>
             </div>
           ) :
-            !selectedUser ? (
+            isLoginID ? (
+              <div className="login-flow">
+                <h1>Acceso con ID</h1>
+                <p className="auth-subtitle">Introduce tus credenciales para sincronizar tus notas.</p>
+
+                <div className="form-group" style={{ marginBottom: '3rem' }}>
+                  <label className="unit-sub" style={{ marginLeft: '1rem', display: 'block', marginBottom: '0.6rem' }}>ID de Usuario</label>
+                  <div className="input-wrapper">
+                    <input type="text" className="form-input" placeholder="p.ej. ramon-123456" value={loginIdInput} onChange={e => setLoginIdInput(e.target.value)} autoFocus />
+                    <User className="input-icon" size={20} />
+                  </div>
+                </div>
+
+                <div className="pin-input-area" onClick={() => pinInputRef.current.focus()}>
+                  <label className="unit-sub" style={{ marginBottom: '1.5rem', display: 'block' }}>Introduce tu PIN</label>
+                  <div className="pass-dot-container">
+                    {[1, 2, 3, 4].map(i => (
+                      <div key={i} className={`pass-dot ${password.length >= i ? 'filled' : ''} ${error ? 'error' : ''}`}></div>
+                    ))}
+                  </div>
+                  <input ref={pinInputRef} type="password" maxLength="4" className="form-input" style={{ opacity: 0, position: 'absolute' }} value={password} onChange={e => setPassword(e.target.value)} />
+                </div>
+
+                <div className="auth-actions" style={{ marginTop: '2rem' }}>
+                  <button className="btn btn-secondary" style={{ width: '100%' }} onClick={() => { setIsLoginID(false); setPassword(''); setLoginIdInput(''); }}>Atrás</button>
+                </div>
+              </div>
+            ) : !selectedUser ? (
               <>
                 <h1>Happy Notes.</h1>
                 <p className="auth-subtitle">Captura tus visiones en un entorno perfectamente equilibrado.</p>
@@ -376,26 +409,33 @@ function App() {
                     </div>
                   </div>
                 </div>
+
+                <div className="auth-actions" style={{ marginTop: '3rem' }}>
+                  <button className="btn btn-secondary" style={{ width: '100%', borderWidth: '1px', borderStyle: 'solid' }} onClick={() => setIsLoginID(true)}>
+                    <ShieldCheck size={18} /> Iniciar sesión con ID
+                  </button>
+                </div>
               </>
-            ) : (
-              <div className="login-flow">
-                <div className="profile-identity">
-                  <div className="profile-avatar-active">{selectedUser.avatar}</div>
-                  <h2>Hola, {selectedUser.name}</h2>
-                </div>
-
-                <div className="pin-input-area" onClick={() => pinInputRef.current.focus()}>
-                  <div className="pass-dot-container">
-                    {[1, 2, 3, 4].map(i => (
-                      <div key={i} className={`pass-dot ${password.length >= i ? 'filled' : ''} ${error ? 'error' : ''}`}></div>
-                    ))}
+            )
+              : (
+                <div className="login-flow">
+                  <div className="profile-identity">
+                    <div className="profile-avatar-active">{selectedUser.avatar}</div>
+                    <h2>Hola, {selectedUser.name}</h2>
                   </div>
-                  <input ref={pinInputRef} type="password" maxLength="4" className="form-input" style={{ opacity: 0, position: 'absolute' }} value={password} onChange={e => setPassword(e.target.value)} />
-                </div>
 
-                <button className="btn btn-secondary" style={{ width: '100%' }} onClick={() => { setSelectedUser(null); setPassword(''); setError(false); }}>Cambiar Perfil</button>
-              </div>
-            )}
+                  <div className="pin-input-area" onClick={() => pinInputRef.current.focus()}>
+                    <div className="pass-dot-container">
+                      {[1, 2, 3, 4].map(i => (
+                        <div key={i} className={`pass-dot ${password.length >= i ? 'filled' : ''} ${error ? 'error' : ''}`}></div>
+                      ))}
+                    </div>
+                    <input ref={pinInputRef} type="password" maxLength="4" className="form-input" style={{ opacity: 0, position: 'absolute' }} value={password} onChange={e => setPassword(e.target.value)} />
+                  </div>
+
+                  <button className="btn btn-secondary" style={{ width: '100%' }} onClick={() => { setSelectedUser(null); setPassword(''); setError(false); }}>Cambiar Perfil</button>
+                </div>
+              )}
         </div>
       </div>
     )
@@ -435,6 +475,11 @@ function App() {
           <div style={{ animation: 'entrance 0.8s var(--ease-premium)' }}>
             <h1 className="section-title">Ajustes</h1>
             <div className="note-card" style={{ maxWidth: '520px' }}>
+              <div style={{ marginBottom: '2.5rem', padding: '1.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '16px', border: '1px solid var(--border-soft)' }}>
+                <label className="unit-sub" style={{ display: 'block', marginBottom: '0.4rem', opacity: 0.6 }}>Tu ID de Sincronización</label>
+                <code style={{ fontSize: '1.1rem', color: 'var(--accent-primary)', fontWeight: 800, wordBreak: 'break-all' }}>{currentUser.id}</code>
+                <p style={{ fontSize: '0.75rem', marginTop: '0.8rem', opacity: 0.5 }}>Usa este ID para iniciar sesión desde otros dispositivos.</p>
+              </div>
               <h3 style={{ marginBottom: '2rem' }}>Seguridad del Perfil</h3>
               <div style={{ marginBottom: '2rem' }}>
                 <label className="unit-sub" style={{ display: 'block', marginBottom: '0.8rem' }}>Nuevo PIN</label>
