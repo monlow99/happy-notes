@@ -175,6 +175,8 @@ function App() {
   const [pdfAnnotating, setPdfAnnotating] = useState(false);
   const [annotationText, setAnnotationText] = useState("");
 
+  const [isAIReady, setIsAIReady] = useState(false);
+
   // --- Voice Transcription Logic ---
   const [isRecording, setIsRecording] = useState(false);
   const [transcriptionStatus, setTranscriptionStatus] = useState("");
@@ -187,6 +189,8 @@ function App() {
 
     workerRef.current.onmessage = (e) => {
       const { status, message, text } = e.data;
+      if (status === 'ready') setIsAIReady(true);
+
       if (status === 'complete') {
         setForm(prev => ({ ...prev, content: (prev.content + " " + text).trim() }));
         setTranscriptionStatus("");
@@ -198,7 +202,17 @@ function App() {
     return () => workerRef.current.terminate();
   }, []);
 
+  const preloadAI = () => {
+    if (workerRef.current) {
+      workerRef.current.postMessage({ action: 'load' });
+    }
+  }
+
   const startRecording = async () => {
+    if (!isAIReady) {
+      setSettingsStatus("El cerebro de voz no está listo. Por favor, precárgalo.");
+      return;
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const recorder = new MediaRecorder(stream);
@@ -207,6 +221,16 @@ function App() {
       recorder.ondataavailable = (e) => chunks.push(e.data);
       recorder.onstop = async () => {
         const audioBlob = new Blob(chunks, { type: 'audio/wav' });
+
+        // Guardar también el audio como adjunto
+        const base64Audio = await fileToBase64(audioBlob);
+        setForm(prev => ({
+          ...prev,
+          attachment: prev.attachment || base64Audio,
+          attachmentName: prev.attachmentName || `Nota_Voz_${new Date().getTime()}.wav`,
+          type: prev.type === 'note' ? 'voice' : prev.type
+        }));
+
         processAudioForTranscription(audioBlob);
       };
 
@@ -991,7 +1015,8 @@ function App() {
                         <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: 0.3, fontSize: '0.8rem', fontWeight: 800, paddingTop: '1.5rem' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             {note.location && <><MapPin size={12} /> {note.location}</>}
-                            {note.attachment && <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--accent-primary)' }}><FileText size={12} /> Adjunto</div>}
+                            {note.type === 'voice' && <><Mic size={12} color="#22c55e" /> Voz</>}
+                            {note.attachment && note.type !== 'voice' && <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--accent-primary)' }}><FileText size={12} /> Adjunto</div>}
                           </div>
                           <div>{note.date}</div>
                         </div>
@@ -1062,15 +1087,36 @@ function App() {
               <label className="unit-sub" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span>{form.type === 'excel' ? 'Editor Directo (Excel)' : 'Contenido'}</span>
                 <div style={{ display: 'flex', gap: '1.2rem', alignItems: 'center' }}>
-                  <button
-                    className={`btn-voice ${isRecording ? 'recording' : ''}`}
-                    onClick={isRecording ? stopRecording : startRecording}
-                    title={isRecording ? "Detener Grabación" : "Dictar Nota de Voz"}
-                    style={{ background: 'none', border: 'none', color: isRecording ? 'var(--error)' : 'var(--accent-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: 700 }}
-                  >
-                    {isRecording ? <MicOff size={16} className="pulse" /> : <Mic size={16} />}
-                    {isRecording ? "Grabando..." : "Dictar"}
-                  </button>
+                  {!isAIReady ? (
+                    <button
+                      className="btn-link"
+                      style={{ fontSize: '0.75rem', color: 'var(--accent-primary)', fontWeight: 800 }}
+                      onClick={preloadAI}
+                    >
+                      <Sparkles size={14} /> Cargar IA de Voz
+                    </button>
+                  ) : (
+                    <button
+                      className={`btn-voice ${isRecording ? 'recording' : ''}`}
+                      onClick={isRecording ? stopRecording : startRecording}
+                      title={isRecording ? "Detener Grabación" : "Dictar Nota de Voz"}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: isRecording ? 'var(--error)' : '#22c55e',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        opacity: isAIReady ? 1 : 0.4
+                      }}
+                    >
+                      {isRecording ? <MicOff size={16} className="pulse" /> : <Mic size={16} />}
+                      {isRecording ? "Grabando..." : "Dictar"}
+                    </button>
+                  )}
 
                   {form.type === 'excel' && (
                     <button className="btn-link" style={{ fontSize: '0.7rem' }} onClick={() => setForm({ ...form, type: 'note' })}>Convertir a Texto</button>
@@ -1145,15 +1191,20 @@ function App() {
             )}
 
             {form.attachment && (
-              <div style={{ marginBottom: '1.5rem', padding: '0.8rem', background: 'rgba(0,0,0,0.1)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--border-soft)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <FileText size={18} color="var(--accent-primary)" />
-                  <span style={{ fontSize: '0.8rem', fontWeight: 700 }}>{form.attachmentName || 'Archivo adjunto'}</span>
+              <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'rgba(0,0,0,0.1)', borderRadius: '16px', border: '1px solid var(--border-soft)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: form.type === 'voice' ? '1rem' : 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {form.type === 'voice' ? <Mic size={18} color="#22c55e" /> : <FileText size={18} color="var(--accent-primary)" />}
+                    <span style={{ fontSize: '0.8rem', fontWeight: 700 }}>{form.attachmentName || 'Archivo adjunto'}</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <a href={form.attachment} download={form.attachmentName || 'adjunto'} className="btn btn-secondary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.65rem' }}>Descargar</a>
+                    <button className="btn btn-secondary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.65rem', color: 'var(--error)' }} onClick={() => setForm({ ...form, attachment: null, attachmentName: null, type: form.type === 'voice' ? 'note' : form.type })}>Quitar</button>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <a href={form.attachment} download={form.attachmentName || 'adjunto'} className="btn btn-secondary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.65rem' }}>Descargar</a>
-                  <button className="btn btn-secondary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.65rem', color: 'var(--error)' }} onClick={() => setForm({ ...form, attachment: null, attachmentName: null })}>Quitar</button>
-                </div>
+                {form.type === 'voice' && (
+                  <audio src={form.attachment} controls style={{ width: '100%', height: '35px' }} />
+                )}
               </div>
             )}
 
