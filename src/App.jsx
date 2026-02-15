@@ -70,31 +70,45 @@ function App() {
     return () => clearInterval(timer)
   }, [])
 
-  useEffect(() => {
-    const fetchWeather = async () => {
-      try {
-        setWeatherLoading(true)
-        // 1. Get location via IP (Zero-friction, no permission needed)
-        const locRes = await fetch('https://ipapi.co/json/')
-        const locData = await locRes.json()
-
-        if (locData.latitude && locData.longitude) {
-          // 2. Fetch weather based on IP coords
-          const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${locData.latitude}&longitude=${locData.longitude}&current_weather=true`)
+  const fetchWeather = async () => {
+    try {
+      setWeatherLoading(true)
+      // 1. Get location via browser geolocation (User must permit)
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+          const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current_weather=true`)
           const weatherData = await weatherRes.json()
+
+          // Reverse geocode to find city (optional, fallback to 'Ubicación')
           setWeather({
             ...weatherData.current_weather,
-            city: locData.city || 'Tu ubicación'
+            city: 'Tu Ubicación'
           })
-        }
-      } catch (e) {
-        console.error("Error al detectar clima:", e)
-      } finally {
+          setWeatherLoading(false)
+        }, () => setWeatherLoading(false))
+      } else {
         setWeatherLoading(false)
       }
+    } catch (e) {
+      console.error("Error al detectar clima:", e)
+      setWeatherLoading(false)
     }
+  }
 
-    fetchWeather()
+  useEffect(() => {
+    // Optional: Start with IP location but allow manual trigger for GPS
+    const fetchIPWeather = async () => {
+      try {
+        const locRes = await fetch('https://ipapi.co/json/')
+        const locData = await locRes.json()
+        if (locData.latitude) {
+          const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${locData.latitude}&longitude=${locData.longitude}&current_weather=true`)
+          const weatherData = await weatherRes.json()
+          setWeather({ ...weatherData.current_weather, city: locData.city || 'Tu ciudad' })
+        }
+      } catch (e) { } finally { setWeatherLoading(false) }
+    }
+    fetchIPWeather()
   }, [])
 
   useEffect(() => {
@@ -179,17 +193,17 @@ function App() {
         </div>
       </div>
       <div className="status-bar-unit">
-        <div className="unit-sub">{weather?.city || 'Clima Local'}</div>
+        <div className="unit-sub">Clima</div>
         <div className="unit-main">
           {weatherLoading ? (
-            <span style={{ fontSize: '0.9rem', opacity: 0.5 }}>Detectando...</span>
+            <span style={{ fontSize: '0.9rem', opacity: 0.5 }}>Cargando...</span>
           ) : weather ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
               {weather.is_day ? <Sun size={18} color="#fcd34d" /> : <Moon size={18} color="#94a3b8" />}
               {weather.temperature}°C
             </div>
           ) : (
-            <span style={{ fontSize: '0.8rem', opacity: 0.4 }}>Clima no disponible</span>
+            <button className="weather-btn" onClick={fetchWeather}>Detectar Ciudad</button>
           )}
         </div>
       </div>
@@ -274,6 +288,16 @@ function App() {
   return (
     <div className="app-layout">
       <div className="bg-mesh"></div>
+      <header className="app-header">
+        <div className="header-user-badge">
+          <div className="user-avatar-mini">{currentUser.avatar}</div>
+          <span className="user-name-tag">{currentUser.name}</span>
+          <button className="logout-edge-btn" onClick={() => { setCurrentUser(null); setSelectedUser(null); }} title="Cerrar Sesión">
+            <LogOut size={18} />
+          </button>
+        </div>
+      </header>
+
       <aside className="sidebar">
         <h2 className="sidebar-title">Happy Notes.</h2>
         <StatusApplets />
@@ -288,9 +312,6 @@ function App() {
             <div className="icon-box"><Settings size={20} /></div> <span className="nav-text">Ajustes</span>
           </div>
         </nav>
-        <button className="nav-link" style={{ background: 'none', border: 'none', width: '100%', marginBottom: '1rem' }} onClick={() => { setCurrentUser(null); setSelectedUser(null); }}>
-          <div className="icon-box"><LogOut size={20} /></div> <span className="nav-text">Salir</span>
-        </button>
       </aside>
 
       <main className="content-area">
