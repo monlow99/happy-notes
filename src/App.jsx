@@ -66,6 +66,11 @@ function App() {
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000)
+    // Device detection
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) document.body.classList.add('is-mobile');
+    else document.body.classList.add('is-desktop');
+
     return () => clearInterval(timer)
   }, [])
 
