@@ -12,6 +12,7 @@
     "start": "node server.js"
   },
   "dependencies": {
+    "@huggingface/transformers": "^3.8.1",
     "cors": "^2.8.6",
     "docx": "^9.5.3",
     "express": "^5.2.1",

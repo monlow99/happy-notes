@@ -1133,6 +1133,50 @@ body.is-mobile .status-container {
   margin-right: 6px;
 }
 
+/* 🎙️ Voice & AI Animations */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse-red {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.2);
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+.pulse {
+  animation: pulse-red 1.5s ease-in-out infinite;
+}
+
+.btn-voice:hover {
+  filter: brightness(1.2);
+}
+
+.btn-voice.recording {
+  color: var(--error) !important;
+}
+
 /* 📥 Export Actions */
 .export-actions {
   display: flex;

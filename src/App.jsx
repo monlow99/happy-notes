@@ -23,6 +23,9 @@ import {
   MapPin,
   Pin,
   Tag,
+  Mic,
+  MicOff,
+  Loader2,
   Download,
   FileText,
   Share2,
@@ -171,6 +174,67 @@ function App() {
 
   const [pdfAnnotating, setPdfAnnotating] = useState(false);
   const [annotationText, setAnnotationText] = useState("");
+
+  // --- Voice Transcription Logic ---
+  const [isRecording, setIsRecording] = useState(false);
+  const [transcriptionStatus, setTranscriptionStatus] = useState("");
+  const workerRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+
+  useEffect(() => {
+    // Inicializar worker local
+    workerRef.current = new Worker(new URL('./transcription-worker.js', import.meta.url), { type: 'module' });
+
+    workerRef.current.onmessage = (e) => {
+      const { status, message, text } = e.data;
+      if (status === 'complete') {
+        setForm(prev => ({ ...prev, content: (prev.content + " " + text).trim() }));
+        setTranscriptionStatus("");
+      } else {
+        setTranscriptionStatus(message || "");
+      }
+    };
+
+    return () => workerRef.current.terminate();
+  }, []);
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      const chunks = [];
+
+      recorder.ondataavailable = (e) => chunks.push(e.data);
+      recorder.onstop = async () => {
+        const audioBlob = new Blob(chunks, { type: 'audio/wav' });
+        processAudioForTranscription(audioBlob);
+      };
+
+      mediaRecorderRef.current = recorder;
+      recorder.start();
+      setIsRecording(true);
+    } catch (err) {
+      setSettingsStatus("Error al acceder al micrófono.");
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.stream.getTracks().forEach(t => t.stop());
+      setIsRecording(false);
+    }
+  };
+
+  const processAudioForTranscription = async (blob) => {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+    const arrayBuffer = await blob.arrayBuffer();
+    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+
+    // Convertir a monoaural (si es necesario) y Float32Array
+    const audioData = audioBuffer.getChannelData(0);
+    workerRef.current.postMessage({ audio: audioData, language: 'spanish' });
+  };
 
   const pinInputRef = useRef(null)
 
@@ -997,16 +1061,34 @@ function App() {
             <div className="form-group">
               <label className="unit-sub" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span>{form.type === 'excel' ? 'Editor Directo (Excel)' : 'Contenido'}</span>
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ display: 'flex', gap: '1.2rem', alignItems: 'center' }}>
+                  <button
+                    className={`btn-voice ${isRecording ? 'recording' : ''}`}
+                    onClick={isRecording ? stopRecording : startRecording}
+                    title={isRecording ? "Detener Grabación" : "Dictar Nota de Voz"}
+                    style={{ background: 'none', border: 'none', color: isRecording ? 'var(--error)' : 'var(--accent-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: 700 }}
+                  >
+                    {isRecording ? <MicOff size={16} className="pulse" /> : <Mic size={16} />}
+                    {isRecording ? "Grabando..." : "Dictar"}
+                  </button>
+
                   {form.type === 'excel' && (
                     <button className="btn-link" style={{ fontSize: '0.7rem' }} onClick={() => setForm({ ...form, type: 'note' })}>Convertir a Texto</button>
                   )}
+
                   <label style={{ cursor: 'pointer', fontSize: '0.7rem', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <Plus size={14} /> {form.attachment ? 'Cambiar Adjunto' : 'Adjuntar PDF/Word/Excel'}
                     <input type="file" style={{ display: 'none' }} accept=".pdf,.doc,.docx,.xls,.xlsx,.csv" onChange={handleGenericFileUpload} />
                   </label>
                 </div>
               </label>
+
+              {transcriptionStatus && (
+                <div style={{ padding: '0.6rem 1rem', background: 'rgba(var(--accent-primary-rgb), 0.1)', borderRadius: '10px', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.8rem', color: 'var(--accent-primary)', fontWeight: 600 }}>
+                  <Loader2 size={16} className="spin" />
+                  {transcriptionStatus}
+                </div>
+              )}
 
               {form.type === 'excel' ? (
                 <div style={{ border: '1px solid var(--border-soft)', borderRadius: '12px', background: 'var(--surface-mid)', overflow: 'hidden' }}>
