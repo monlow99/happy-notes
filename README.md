@@ -13,15 +13,23 @@
 - **🖋️ Tipografía Curada**: Combinación perfecta de *Plus Jakarta Sans* para la interfaz y *Caveat* para tus pensamientos más personales.
 - **📱 Experiencia Fluida**: Animaciones con curvas de aprendizaje `cubic-bezier` y diseño responsivo adaptativo.
 
-## 📸 Screenshots
+## 📸 Galería de la Aplicación
 
-### Gestión de Perfiles y Acceso
+### 🔐 Gestión de Perfiles y Acceso
 ![Login Preview](public/screenshot-login.png)
 *Pantalla de inicio con simetría axial y detección de ubicación.*
 
-### Espacio de Trabajo y Ajustes
+### 🚀 Espacio de Trabajo (Workspace)
+![Workspace Preview](public/screenshot-workspace.png)
+*Tu centro de creación minimalista con organización por tarjetas inteligentes.*
+
+### 📅 Calendario Soberano
+![Calendar Preview](public/screenshot-calendar.png)
+*Planifica tu tiempo con una vista de calendario integrada y Physics de cristal.*
+
+### ⚙️ Ajustes de Seguridad
 ![Settings Preview](public/screenshot-settings.png)
-*Panel de ajustes con gestión de seguridad y personalización de perfil.*
+*Panel avanzado para gestionar tu PIN y la integridad de tu cuenta.*
 
 ## 🚀 Instalación y Uso
 
