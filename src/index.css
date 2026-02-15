@@ -432,3 +432,80 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* 📅 Sovereign Calendar Design */
+.calendar-view {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 3rem;
+  animation: entrance 0.8s var(--ease-premium);
+}
+
+.calendar-grid-container {
+  background: var(--surface-mid);
+  padding: 3.5rem;
+  border-radius: 40px;
+  border: 1px solid var(--border-soft);
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 12px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18px;
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 700;
+  font-size: 1.1rem;
+  background: rgba(255, 255, 255, 0.02);
+  position: relative;
+}
+
+.calendar-day:hover:not(.empty) {
+  background: var(--surface-bright);
+  transform: translateY(-4px);
+  border-color: var(--border-active);
+}
+
+.calendar-day.selected {
+  background: var(--accent-gradient) !important;
+  color: #fff;
+  box-shadow: 0 15px 30px var(--accent-glow);
+}
+
+.calendar-day.today {
+  border: 2px solid var(--accent-primary);
+}
+
+.day-indicator {
+  position: absolute;
+  bottom: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+}
+
+.day-detail {
+  background: var(--surface-mid);
+  padding: 4rem 3rem;
+  border-radius: 40px;
+  border: 1px solid var(--border-soft);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Fix Logout Button visibility & design */
+.sidebar .nav-link:last-child {
+  margin-top: auto;
+  border-top: 1px solid var(--border-soft);
+  padding-top: 1.5rem;
+  border-radius: 0;
+}
