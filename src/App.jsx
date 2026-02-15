@@ -71,20 +71,30 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(async (pos) => {
-        try {
-          const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current_weather=true`)
-          const data = await res.json()
-          setWeather(data.current_weather)
-          setWeatherLoading(false)
-        } catch (e) {
-          setWeatherLoading(false)
+    const fetchWeather = async () => {
+      try {
+        setWeatherLoading(true)
+        // 1. Get location via IP (Zero-friction, no permission needed)
+        const locRes = await fetch('https://ipapi.co/json/')
+        const locData = await locRes.json()
+
+        if (locData.latitude && locData.longitude) {
+          // 2. Fetch weather based on IP coords
+          const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${locData.latitude}&longitude=${locData.longitude}&current_weather=true`)
+          const weatherData = await weatherRes.json()
+          setWeather({
+            ...weatherData.current_weather,
+            city: locData.city || 'Tu ubicación'
+          })
         }
-      }, () => setWeatherLoading(false))
-    } else {
-      setWeatherLoading(false)
+      } catch (e) {
+        console.error("Error al detectar clima:", e)
+      } finally {
+        setWeatherLoading(false)
+      }
     }
+
+    fetchWeather()
   }, [])
 
   useEffect(() => {
@@ -169,17 +179,17 @@ function App() {
         </div>
       </div>
       <div className="status-bar-unit">
-        <div className="unit-sub">Clima Local</div>
+        <div className="unit-sub">{weather?.city || 'Clima Local'}</div>
         <div className="unit-main">
           {weatherLoading ? (
-            <span style={{ fontSize: '0.9rem', opacity: 0.5 }}>Localizando...</span>
+            <span style={{ fontSize: '0.9rem', opacity: 0.5 }}>Detectando...</span>
           ) : weather ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
               {weather.is_day ? <Sun size={18} color="#fcd34d" /> : <Moon size={18} color="#94a3b8" />}
               {weather.temperature}°C
             </div>
           ) : (
-            <span style={{ fontSize: '0.8rem', opacity: 0.4 }}>Permitir ubicación</span>
+            <span style={{ fontSize: '0.8rem', opacity: 0.4 }}>Clima no disponible</span>
           )}
         </div>
       </div>

@@ -82,15 +82,15 @@ body {
 
 .auth-card {
   background: var(--surface-low);
-  backdrop-filter: blur(32px);
-  -webkit-backdrop-filter: blur(32px);
+  backdrop-filter: blur(48px);
+  -webkit-backdrop-filter: blur(48px);
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-xl);
-  padding: 4rem;
-  width: 100%;
-  max-width: 540px;
+  padding: 5rem 4rem;
+  width: 95%;
+  max-width: 580px;
   text-align: center;
-  box-shadow: 0 50px 100px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 50px 100px rgba(0, 0, 0, 0.6);
   animation: entrance 1s var(--ease-premium) forwards;
   display: flex;
   flex-direction: column;
@@ -100,7 +100,7 @@ body {
 @keyframes entrance {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(30px);
   }
 
   to {
@@ -111,21 +111,24 @@ body {
 
 .auth-card h1 {
   font-family: 'Caveat', cursive;
-  font-size: 5rem;
+  font-size: 4rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   background: var(--accent-gradient);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.1;
+  width: 100%;
 }
 
 .auth-subtitle {
   color: var(--text-dim);
-  font-size: 1.1rem;
-  margin-bottom: 2.5rem;
-  max-width: 380px;
+  font-size: 1.05rem;
+  margin-bottom: 3rem;
+  max-width: 440px;
+  line-height: 1.6;
 }
 
 /* ✨ Professional PIN Input Area */
