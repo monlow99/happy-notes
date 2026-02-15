@@ -203,7 +203,7 @@ function App() {
         <div className={`auth-card ${isShaking ? 'shake' : ''}`}>
           {isRegistering ? (
             <div className="registration-flow" style={{ width: '100%' }}>
-              <h1>Nuevo Perfil</h1>
+              <h1>Happy Notes</h1>
               <p className="auth-subtitle">Crea un espacio seguro para tus pensamientos.</p>
 
               <div className="auth-info-banner"><ShieldCheck size={16} color="var(--accent-primary)" /> Cifrado local de extremo a extremo</div>
@@ -225,22 +225,25 @@ function App() {
             </div>
           ) : !selectedUser ? (
             <>
-              <h1>Happy.</h1>
+              <h1>Happy Notes.</h1>
               <p className="auth-subtitle">Captura tus visiones en un entorno perfectamente equilibrado.</p>
 
               <StatusApplets />
 
               <div className="auth-info-banner"><User size={16} color="var(--accent-primary)" /> Selecciona una identidad para entrar</div>
 
-              <div className="profile-scroll" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '1.5rem', width: '100%' }}>
-                {profiles.map(user => (
-                  <div key={user.id} className="profile-item" onClick={() => setSelectedUser(user)} style={{ cursor: 'pointer', padding: '1.5rem 1rem', borderRadius: '24px', background: 'var(--surface-mid)', border: '1px solid var(--border-soft)', transition: 'var(--transition)' }}>
-                    <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--accent-primary)', marginBottom: '0.8rem' }}>{user.avatar}</div>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>{user.name}</span>
+              <div className="profile-grid-container">
+                <div className="profile-scroll">
+                  {profiles.map(user => (
+                    <div key={user.id} className="profile-item" onClick={() => setSelectedUser(user)}>
+                      <div className="profile-avatar-box">{user.avatar}</div>
+                      <span style={{ fontSize: '1rem', fontWeight: 700 }}>{user.name}</span>
+                    </div>
+                  ))}
+                  <div className="profile-item" onClick={() => setIsRegistering(true)} style={{ borderStyle: 'dashed', opacity: 0.5 }}>
+                    <Plus size={32} strokeWidth={3} />
+                    <span style={{ fontSize: '0.8rem', fontWeight: 700, opacity: 0.5 }}>NUEVO</span>
                   </div>
-                ))}
-                <div className="profile-item" onClick={() => setIsRegistering(true)} style={{ border: '1px dashed var(--border-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.4, borderRadius: '24px', padding: '1.5rem' }}>
-                  <Plus size={24} />
                 </div>
               </div>
             </>
@@ -272,7 +275,7 @@ function App() {
     <div className="app-layout">
       <div className="bg-mesh"></div>
       <aside className="sidebar">
-        <h2 className="sidebar-title">Happy.</h2>
+        <h2 className="sidebar-title">Happy Notes.</h2>
         <StatusApplets />
         <nav style={{ marginTop: '3rem', flex: 1 }}>
           <div className={`nav-link ${view === 'notes' && !isSettingsOpen ? 'active' : ''}`} onClick={() => { setView('notes'); setIsSettingsOpen(false); }}>
