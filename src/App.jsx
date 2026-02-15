@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import * as XLSX from 'xlsx'
 import * as docx from "docx";
 import mammoth from "mammoth";
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import {
   Clock,
   CloudRain,
@@ -112,6 +113,64 @@ function App() {
   const [time, setTime] = useState(new Date())
   const [weather, setWeather] = useState(null)
   const [weatherLoading, setWeatherLoading] = useState(true)
+
+  // --- Excel & PDF Advanced Logic ---
+  const handleCellEdit = (rowIndex, key, newValue) => {
+    try {
+      const data = JSON.parse(form.content || '[]');
+      const updatedData = data.map((row, idx) =>
+        idx === rowIndex ? { ...row, [key]: newValue } : row
+      );
+      setForm({ ...form, content: JSON.stringify(updatedData) });
+    } catch (e) { console.error(e); }
+  }
+
+  const addExcelRow = () => {
+    try {
+      const data = JSON.parse(form.content || '[]');
+      const newRow = Object.keys(data[0] || {}).reduce((acc, key) => ({ ...acc, [key]: '' }), {});
+      setForm({ ...form, content: JSON.stringify([...data, newRow]) });
+    } catch (e) { console.error(e); }
+  }
+
+  const applyPDFAnnotation = async () => {
+    if (!form.attachment || !annotationText) return;
+    try {
+      const existingPdfBytes = await fetch(form.attachment).then(res => res.arrayBuffer());
+      const pdfDoc = await PDFDocument.load(existingPdfBytes);
+      const pages = pdfDoc.getPages();
+      const firstPage = pages[0];
+      const { width, height } = firstPage.getSize();
+
+      const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+      firstPage.drawText(annotationText, {
+        x: 50,
+        y: height - 100,
+        size: 30,
+        font: font,
+        color: rgb(0.95, 0.1, 0.1),
+      });
+
+      const pdfBytes = await pdfDoc.save();
+      const base64 = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.readAsDataURL(new Blob([pdfBytes], { type: 'application/pdf' }));
+      });
+
+      setForm({ ...form, attachment: base64 });
+      setAnnotationText("");
+      setPdfAnnotating(false);
+      setSettingsStatus("Anotación añadida al PDF.");
+      setTimeout(() => setSettingsStatus(''), 2000);
+    } catch (e) {
+      console.error("Error annotating PDF", e);
+      setSettingsStatus("Error al anotar PDF.");
+    }
+  }
+
+  const [pdfAnnotating, setPdfAnnotating] = useState(false);
+  const [annotationText, setAnnotationText] = useState("");
 
   const pinInputRef = useRef(null)
 
@@ -937,10 +996,10 @@ function App() {
 
             <div className="form-group">
               <label className="unit-sub" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span>{form.type === 'excel' ? 'Editor de Tabla (Excel)' : 'Contenido'}</span>
+                <span>{form.type === 'excel' ? 'Editor Directo (Excel)' : 'Contenido'}</span>
                 <div style={{ display: 'flex', gap: '1rem' }}>
                   {form.type === 'excel' && (
-                    <button className="btn-link" style={{ fontSize: '0.7rem' }} onClick={() => setForm({ ...form, type: 'note' })}>Volver a Texto</button>
+                    <button className="btn-link" style={{ fontSize: '0.7rem' }} onClick={() => setForm({ ...form, type: 'note' })}>Convertir a Texto</button>
                   )}
                   <label style={{ cursor: 'pointer', fontSize: '0.7rem', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <Plus size={14} /> {form.attachment ? 'Cambiar Adjunto' : 'Adjuntar PDF/Word/Excel'}
@@ -950,31 +1009,58 @@ function App() {
               </label>
 
               {form.type === 'excel' ? (
-                <div style={{ maxHeight: '300px', overflow: 'auto', border: '1px solid var(--border-soft)', borderRadius: '12px', background: 'var(--surface-mid)' }}>
-                  <table className="excel-editor-table">
-                    <thead>
-                      <tr>
-                        {Object.keys(Array.isArray(JSON.parse(form.content || '[]')) ? (JSON.parse(form.content || '[]')[0] || {}) : {}).map(key => (
-                          <th key={key}>{key}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(Array.isArray(JSON.parse(form.content || '[]')) ? JSON.parse(form.content || '[]') : []).map((row, idx) => (
-                        <tr key={idx}>
-                          {Object.values(row).map((val, vIdx) => (
-                            <td key={vIdx}>{val}</td>
+                <div style={{ border: '1px solid var(--border-soft)', borderRadius: '12px', background: 'var(--surface-mid)', overflow: 'hidden' }}>
+                  <div style={{ maxHeight: '300px', overflow: 'auto' }}>
+                    <table className="excel-editor-table">
+                      <thead>
+                        <tr>
+                          {Object.keys(Array.isArray(JSON.parse(form.content || '[]')) ? (JSON.parse(form.content || '[]')[0] || {}) : {}).map(key => (
+                            <th key={key}>{key}</th>
                           ))}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  <p style={{ padding: '1rem', fontSize: '0.7rem', opacity: 0.5, textAlign: 'center' }}>Modo visualización de tabla disponible. Edita el texto para cambios profundos.</p>
+                      </thead>
+                      <tbody>
+                        {(Array.isArray(JSON.parse(form.content || '[]')) ? JSON.parse(form.content || '[]') : []).map((row, idx) => (
+                          <tr key={idx}>
+                            {Object.keys(row).map((key, vIdx) => (
+                              <td
+                                key={vIdx}
+                                contentEditable
+                                onBlur={(e) => handleCellEdit(idx, key, e.target.innerText)}
+                                suppressContentEditableWarning
+                              >
+                                {row[key]}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <button className="btn btn-secondary" style={{ width: '100%', borderRadius: 0, padding: '0.4rem', fontSize: '0.7rem', border: 'none', borderTop: '1px solid var(--border-soft)' }} onClick={addExcelRow}>
+                    <Plus size={14} /> Añadir Fila
+                  </button>
                 </div>
               ) : (
                 <textarea className="form-input no-icon content-textarea" placeholder="Escribe aquí..." value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} />
               )}
             </div>
+
+            {pdfAnnotating && (
+              <div style={{ padding: '1rem', background: 'var(--surface-bright)', borderRadius: '16px', border: '1px solid var(--accent-primary)', marginBottom: '1.5rem', animation: 'entrance 0.4s var(--ease-premium)' }}>
+                <label className="unit-sub" style={{ marginBottom: '0.8rem', display: 'block' }}>Añadir Texto al PDF (Encabezado)</label>
+                <div style={{ display: 'flex', gap: '0.8rem' }}>
+                  <input
+                    className="form-input"
+                    style={{ flex: 1 }}
+                    placeholder="Escribe tu anotación..."
+                    value={annotationText}
+                    onChange={e => setAnnotationText(e.target.value)}
+                  />
+                  <button className="btn btn-primary" onClick={applyPDFAnnotation}><Save size={16} /> Aplicar</button>
+                </div>
+              </div>
+            )}
 
             {form.attachment && (
               <div style={{ marginBottom: '1.5rem', padding: '0.8rem', background: 'rgba(0,0,0,0.1)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--border-soft)' }}>
@@ -1001,7 +1087,12 @@ function App() {
                   <FileDown size={16} /> Exportar Word
                 </button>
                 {form.type === 'pdf' && form.attachment && (
-                  <button className="btn-export" style={{ background: 'var(--accent-primary)', color: '#fff' }} onClick={() => {
+                  <button className="btn-export" style={{ background: 'var(--accent-primary)', color: '#fff' }} onClick={() => setPdfAnnotating(!pdfAnnotating)}>
+                    <Tag size={16} /> {pdfAnnotating ? 'Cerrar Notas' : 'Anotar PDF'}
+                  </button>
+                )}
+                {form.type === 'pdf' && form.attachment && (
+                  <button className="btn-export" onClick={() => {
                     const win = window.open();
                     win.document.write(`<iframe src="${form.attachment}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
                   }}>
