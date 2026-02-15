@@ -54,8 +54,8 @@
    *Nota: La aplicación detectará automáticamente tu ubicación para el clima en tiempo real.*
 
 4. **Acceso**: 
-   - **Local**: [http://localhost:5173/](http://localhost:5173/)
-   - **Desde otros dispositivos**: `http://[IP-DE-TU-PC]:5173/`
+   - **Local**: [http://localhost:8080/](http://localhost:8080/)
+   - **Desde otros dispositivos**: `http://[IP-DE-TU-PC]:8080/`
 
 ## 🛠️ Stack Tecnológico
 

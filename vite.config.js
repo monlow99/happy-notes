@@ -10,6 +10,7 @@ export default defineConfig({
   ],
   server: {
     https: true,
-    host: true
+    host: true,
+    port: 8080
   }
 })
