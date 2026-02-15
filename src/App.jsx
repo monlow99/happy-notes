@@ -468,7 +468,7 @@ function CalendarView({ date, setDate, notes, selectedDay, setSelectedDay, onDay
   return (
     <div className="calendar-view">
       <div className="calendar-main">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <h1 className="section-title" style={{ marginBottom: 0 }}>{meses[date.getMonth()]} <small style={{ opacity: 0.2 }}>{date.getFullYear()}</small></h1>
           <div style={{ display: 'flex', gap: '1rem' }}>
             <button className="btn btn-secondary" style={{ padding: '0 1rem' }} onClick={() => setDate(new Date(date.getFullYear(), date.getMonth() - 1, 1))}><ArrowLeft size={18} /></button>
@@ -477,7 +477,7 @@ function CalendarView({ date, setDate, notes, selectedDay, setSelectedDay, onDay
         </div>
         <div className="calendar-grid-container">
           <div className="calendar-grid">
-            {['LU', 'MA', 'MI', 'JU', 'VI', 'SA', 'DO'].map(d => <div key={d} style={{ textAlign: 'center', fontSize: '0.8rem', fontWeight: 900, opacity: 0.3, padding: '1rem 0' }}>{d}</div>)}
+            {['LU', 'MA', 'MI', 'JU', 'VI', 'SA', 'DO'].map(d => <div key={d} style={{ textAlign: 'center', fontSize: '0.8rem', fontWeight: 900, opacity: 0.3, padding: '0.5rem 0' }}>{d}</div>)}
             {grid.map((d, i) => {
               if (!d) return <div key={i}></div>
               const dStr = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`

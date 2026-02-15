@@ -727,10 +727,7 @@ body {
   grid-template-columns: 1fr 280px;
   gap: 1.25rem;
   animation: entrance 0.8s var(--ease-premium);
-  height: 100%;
-  max-height: calc(100vh - 12rem);
-  /* Account for padding */
-  overflow: hidden;
+  min-height: 0;
 }
 
 .calendar-main {
@@ -761,7 +758,8 @@ body {
 }
 
 .calendar-day {
-  aspect-ratio: 1;
+  min-height: 50px;
+  padding: 1rem 0;
   display: flex;
   align-items: center;
   justify-content: center;
