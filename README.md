@@ -1,33 +1,41 @@
 # 🌿 Happy Notes - UI UX Pro Max Edition
 
-¡Bienvenido a **Happy Notes**! Una experiencia de productividad inmersiva, elegante y segura, diseñada para capturar tus ideas con un estilo de alta gama.
+¡Bienvenido a **Happy Notes**! Una experiencia de productividad inmersiva, elegante y segura, diseñada para capturar tus ideas con un estilo de alta gama y tecnología de vanguardia.
 
 ![Login Screen](public/login.png)
 
 ## 🌟 Características Pro-Max
 
-- **🏷️ Categorías y Etiquetas**: Organiza tus notas en secciones (General, Trabajo, Personal, Ideas) para un acceso rápido y ordenado.
-- **📌 Notas Fijadas (Pins)**: Mantén tus pensamientos más importantes siempre arriba con la función de fijado prioritario.
-- **🌓 Modo Dual (Claro/Oscuro)**: Cambia instantáneamente entre el elegante tema *Slate Emerald* (oscuro) y el limpio *Snow Emerald* (claro).
-- **📥 Exportación Avanzada**: Guarda tus notas individualmente en **TXT**, genera reportes completos en **Excel (.xlsx)** con toda la data formateada, o imprime un reporte maestro en **PDF** con un diseño profesional.
-- **💾 Copias de Seguridad**: Exporta toda tu información en **JSON** para una portabilidad total.
-- **🔐 Acceso Simplificado**: Inicia sesión con un **Nombre de Usuario** fácil de recordar (¡sin números largos!) y tu PIN.
-- **🌐 Sincronización Multi-Dispositivo**: Base de datos centralizada en **SQLite**. Accede a tus notas desde cualquier dispositivo de tu red local.
-- **🚀 Arquitectura Full-Stack**: Integridad de datos gestionada por un servidor Node.js/Express de alto rendimiento.
+### 🧠 Inteligencia Artificial de Voz (Local & Privada)
+- **🎤 Dictado Whisper Base**: Integración de OpenAI Whisper (Base) ejecutándose localmente en tu navegador. Transcribe tus ideas con precisión quirúrgica sin que el audio salga de tu ordenador.
+- **⚡ Precarga Inteligente**: El cerebro de voz se precarga al iniciar la app, garantizando disponibilidad instantánea cuando la inspiración llega.
+- **🎵 Compresión MP3 Hi-Fi**: Codificación automática en segundo plano a **128kbps**. Calidad profesional con un ahorro de espacio del 90%.
+
+### 📑 Gestión de Documentos Inteligente
+- **📊 Editor de Excel Directo**: Importa archivos .xlsx y edita sus celdas directamente desde el editor de notas. Añade filas y guarda los cambios como datos estructurados.
+- **🖍️ Anotador de PDF**: Añade encabezados y notas personalizadas a tus archivos PDF adjuntos. La app "quema" la anotación en el documento para una persistencia total.
+- **🔄 Importación Universal**: Soporte nativo para importar contenido desde Word (.docx) y Excel (.xlsx) transformándolos en notas editables.
+
+### 🛡️ Seguridad y Robustez
+- **🔐 Sincronización Blindada**: Nuevo protocolo de sincronización con "Bloqueo de Escritura" que evita la pérdida de datos durante ediciones activas.
+- **📂 Almacenamiento Físico Aislado**: El servidor crea automáticamente carpetas privadas en `storage/[user_id]` para cada perfil, garantizando un orden absoluto de tus archivos adjuntos.
+- **📌 Pins & Categorías**: Organización multinivel con notas fijadas prioritarias y filtrado dinámico por categorías (Trabajo, Personal, Ideas, etc.).
+
+### ✨ Experiencia de Usuario (UX) Premium
+- **🎨 Modal "Captura tu Chispa"**: Un editor refinado y compacto diseñado para la concentración, con estética de cristal y micro-animaciones.
+- **🌓 Temas Dinámicos**: Cambia entre múltiples temas (Slate Emerald, Midnight Pro, Sunset Amber, Neon Cyber, Lavender Mist) con escalado de interfaz personalizado.
+- **📊 Reportes Maestros**: Genera automáticamente reportes de todas tus notas en Excel o PDF con un solo clic.
 
 ## 📸 Galería de la Aplicación
 
 ### 🔐 Gestión de Acceso Simple
-*Acceso por grid de perfiles o mediante ID de usuario simplificado.*
+*Acceso por grid de perfiles o mediante ID de usuario simplificado con cifrado local.*
 
 ### 🚀 Mis Notas (Workspace)
 *Tu centro de creación con filtrado por categorías y notas fijadas prioritarias.*
 
 ### 📅 Calendario Soberano
 *Planifica tu tiempo con una vista de calendario integrada y Physics de cristal.*
-
-### 🌓 Personalización
-*Intercambio dinámico de temas para adaptarse a tu entorno de trabajo.*
 
 ## 🚀 Instalación y Uso
 
@@ -50,19 +58,11 @@
    ```
    Este script inicia automáticamente tanto el servidor de base de datos como el frontend.
 
-   **Alternativamente**, puedes ejecutarlos por separado:
-   - Terminal 1 (Base de Datos): `npm run server`
-   - Terminal 2 (Frontend): `npm run dev`
-   
-   *Nota: La aplicación detectará automáticamente tu ubicación para el clima en tiempo real.*
-
 4. **Acceso**: 
-   - **Local**: [http://localhost:8080/](http://localhost:8080/)
-   - **Desde otros dispositivos**: `http://[IP-DE-TU-PC]:8080/`
+   - **Protocolo**: HTTPS (requerido para el uso del Micrófono e IA).
+   - **Local**: [https://localhost:8080/](https://localhost:8080/)
 
 ### Opción 2: Instalación con Docker 🐳
-
-Si prefieres desplegar Happy Notes en un servidor usando Docker, puedes hacerlo de forma rápida:
 
 1. **Clonar e iniciar con Docker Compose**:
    ```bash
@@ -72,19 +72,17 @@ Si prefieres desplegar Happy Notes en un servidor usando Docker, puedes hacerlo 
    ```
 
 2. **Persistencia**: 
-   El contenedor crea un volumen para el archivo `happy-notes.db`, asegurando que tus notas y perfiles no se pierdan al reiniciar el contenedor.
-
-3. **Acceso**:
-   La aplicación estará disponible en el puerto **8080**.
+   El contenedor crea volúmenes para `happy-notes.db` y la carpeta `storage/`, asegurando que tus notas, perfiles y archivos de audio no se pierdan.
 
 ## 🛠️ Stack Tecnológico
 
-- **React 18/19** - El corazón de la reactividad.
-- **Vite** - Bundler ultra-rápido.
-- **SQLite 3** - Persistencia de datos robusta y ligera.
-- **Lucide React** - Iconografía profesional y consistente.
-- **Vanilla CSS** - Diseño puro con variables y efectos Pro-Max altamente responsivos.
-- **Open-Meteo & OpenStreetMap** - Datos ambientales en tiempo real.
+- **Frontend**: React 19 + Vite + Vanilla CSS Pro-Max.
+- **IA**: @huggingface/transformers (Whisper Base WASM).
+- **Audio**: lamejs (MP3 Encoder 128kbps).
+- **Documentos**: xlsx, docx, mammoth, pdf-lib.
+- **Backend**: Node.js + Express.
+- **Base de Datos**: SQLite 3.
+- **Iconografía**: Lucide React.
 
 ---
-*Diseñado con ❤️ para elevar el estándar de tus notas diarias.*
+*Diseñado con ❤️ para elevar el estándar de tus notas diarias y proteger tu privacidad.*
