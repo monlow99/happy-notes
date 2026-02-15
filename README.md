@@ -2,7 +2,7 @@
 
 ¡Bienvenido a **Happy Notes**! Una experiencia de productividad inmersiva, elegante y segura, diseñada para capturar tus ideas con un estilo **Slate Emerald** de alta gama.
 
-![Login Screen](public/screenshot-login.png)
+![Login Screen](public/login.png)
 
 ## 🌟 Características Pro-Max
 
@@ -16,19 +16,19 @@
 ## 📸 Galería de la Aplicación
 
 ### 🔐 Gestión de Perfiles y Acceso
-![Login Preview](public/screenshot-login.png)
+![Login Preview](public/login.png)
 *Pantalla de inicio con simetría axial y detección de ubicación.*
 
 ### 🚀 Espacio de Trabajo (Workspace)
-![Workspace Preview](public/screenshot-workspace.png)
+![Workspace Preview](public/workspace.png)
 *Tu centro de creación minimalista con organización por tarjetas inteligentes.*
 
 ### 📅 Calendario Soberano
-![Calendar Preview](public/screenshot-calendar.png)
+![Calendar Preview](public/calendar.png)
 *Planifica tu tiempo con una vista de calendario integrada y Physics de cristal.*
 
 ### ⚙️ Ajustes de Seguridad
-![Settings Preview](public/screenshot-settings.png)
+![Settings Preview](public/settings.png)
 *Panel avanzado para gestionar tu PIN y la integridad de tu cuenta.*
 
 ## 🚀 Instalación y Uso
