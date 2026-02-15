@@ -573,30 +573,28 @@ function App() {
       </aside>
 
       <div className="main-container" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
-        <header className="app-header">
-          <div className="content-wrapper" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', height: '100%', maxWidth: '1800px' }}>
-            <div className="header-user-badge">
-              <button
-                className="logout-edge-btn"
-                onClick={() => {
-                  const currentIndex = THEMES.findIndex(t => t.id === activeTheme);
-                  const nextIndex = (currentIndex + 1) % THEMES.length;
-                  setActiveTheme(THEMES[nextIndex].id);
-                }}
-                title="Siguiente Tema"
-              >
-                <Moon size={18 * uiScale} fill={THEMES.find(t => t.id === activeTheme)?.isDark ? "currentColor" : "none"} />
-              </button>
-              <div className="user-profile-tag" onClick={() => setIsSettingsOpen(true)}>
-                <div className="user-avatar-mini">{currentUser.avatar}</div>
-                <span className="user-name-tag">{currentUser.name}</span>
-              </div>
-              <button className="logout-edge-btn" onClick={() => { setCurrentUser(null); setSelectedUser(null); localStorage.removeItem('happy-session'); }} title="Cerrar Sesión">
-                <LogOut size={18 * uiScale} />
-              </button>
-            </div>
+        <div className="user-bubble-container">
+          <button
+            className="logout-edge-btn"
+            onClick={() => {
+              const currentIndex = THEMES.findIndex(t => t.id === activeTheme);
+              const nextIndex = (currentIndex + 1) % THEMES.length;
+              setActiveTheme(THEMES[nextIndex].id);
+            }}
+            title="Siguiente Tema"
+          >
+            <Moon size={18 * uiScale} fill={THEMES.find(t => t.id === activeTheme)?.isDark ? "currentColor" : "none"} />
+          </button>
+
+          <div className="user-profile-tag" onClick={() => setIsSettingsOpen(true)}>
+            <div className="user-avatar-mini">{currentUser.avatar}</div>
+            <span className="user-name-tag">{currentUser.name}</span>
           </div>
-        </header>
+
+          <button className="logout-edge-btn" onClick={() => { setCurrentUser(null); setSelectedUser(null); localStorage.removeItem('happy-session'); }} title="Cerrar Sesión">
+            <LogOut size={18 * uiScale} />
+          </button>
+        </div>
 
         <main className="content-area">
           <div className="content-wrapper">

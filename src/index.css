@@ -557,7 +557,7 @@ body.is-mobile .status-container {
 
 .content-area {
   flex: 1;
-  padding: var(--fluid-padding);
+  padding: calc(8rem * var(--ui-scale)) var(--fluid-padding) var(--fluid-padding);
   height: 100vh;
   overflow-y: auto;
   display: flex;
@@ -801,24 +801,35 @@ body.is-mobile .status-container {
 }
 
 /* 🏔️ Floating Header & User Identity */
-.app-header {
-  height: calc(90px * var(--ui-scale));
-  padding: 0 var(--fluid-padding);
+/* 🏔️ Floating User Bubble */
+.user-bubble-container {
+  position: fixed;
+  top: calc(1.5rem * var(--ui-scale));
+  right: calc(1.5rem * var(--ui-scale));
+  z-index: 1000;
+  background: var(--surface-low);
+  backdrop-filter: blur(24px);
+  padding: calc(0.6rem * var(--ui-scale));
+  border-radius: calc(60px * var(--ui-scale));
+  border: 1px solid var(--border-soft);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  border-bottom: 1px solid var(--border-soft);
-  background: var(--surface-low);
-  backdrop-filter: blur(20px);
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  gap: calc(1rem * var(--ui-scale));
+  transition: var(--transition);
+  animation: entrance 0.8s var(--ease-premium);
+}
+
+.user-bubble-container:hover {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 30px var(--accent-glow);
+  background: var(--surface-mid);
 }
 
 .header-user-badge {
   display: flex;
   align-items: center;
-  gap: calc(1.5rem * var(--ui-scale));
+  gap: calc(0.8rem * var(--ui-scale));
 }
 
 .user-profile-tag {
