@@ -202,10 +202,10 @@ function App() {
         setNotes(prev => prev.map(n => n.id === targetId ? { ...n, content: (n.content + " " + text).trim() } : n));
         setHasUnsavedChanges(true);
         setTranscriptionStatus("");
-      } else if (status === 'mp3-complete') {
-        console.log("Audio MP3 recibido del worker");
+      } else if (status === 'audio-complete') {
         const base64Audio = await fileToBase64(blob);
-        const audioName = `Nota_Voz_${new Date().getTime()}.mp3`;
+        const format = e.data.format || 'mp3';
+        const audioName = `Nota_Voz_${new Date().getTime()}.${format}`;
 
         setForm(prev => prev.id === targetId ? {
           ...prev,
@@ -222,6 +222,10 @@ function App() {
         } : n));
 
         setHasUnsavedChanges(true);
+      } else if (status === 'audio-error') {
+        console.warn("Audio processing warning:", message);
+        setTranscriptionStatus("Asegurado como WAV (Compresión no disponible)");
+        setTimeout(() => setTranscriptionStatus(""), 4000);
       } else if (status === 'error') {
         console.error("AI Worker Error:", message);
         setTranscriptionStatus("Error en IA: " + message);
@@ -260,7 +264,7 @@ function App() {
       return;
     }
     try {
-      // Asignar ID temporal si es nueva nota, o usar el actual
+      // Fix: Estabilizar el ID de la nota desde que empieza la grabación
       const currentId = form.id || Date.now().toString();
       if (!form.id) setForm(prev => ({ ...prev, id: currentId }));
       transcriptionIdRef.current = currentId;
@@ -272,6 +276,26 @@ function App() {
       recorder.ondataavailable = (e) => chunks.push(e.data);
       recorder.onstop = async () => {
         const audioBlob = new Blob(chunks, { type: 'audio/wav' });
+
+        // Adjuntar WAV inmediatamente como respaldo temporal
+        const base64Wav = await fileToBase64(audioBlob);
+        const targetId = transcriptionIdRef.current;
+        const tempName = `Nota_Voz_Sincronizando.wav`;
+
+        setForm(prev => prev.id === targetId ? {
+          ...prev,
+          attachment: base64Wav,
+          attachmentName: tempName,
+          type: 'voice'
+        } : prev);
+
+        setNotes(prev => prev.map(n => n.id === targetId ? {
+          ...n,
+          attachment: base64Wav,
+          attachmentName: tempName,
+          type: 'voice'
+        } : n));
+
         processAudioForTranscription(audioBlob);
       };
 
@@ -572,10 +596,17 @@ function App() {
   }
 
   const saveNote = () => {
+    if (isRecording) {
+      alert("Por favor, detén la grabación antes de guardar.");
+      return;
+    }
     if (!form.title.trim() && !form.content.trim() && !form.attachment) return
-    const noteData = { ...form, id: editingNote ? editingNote.toString() : Date.now().toString() };
 
-    setHasUnsavedChanges(true); // Marcamos que hay cambios sin sincronizar
+    // Fix crucial: usar form.id si ya existe (para notas de voz en proceso)
+    const noteId = editingNote ? editingNote.toString() : (form.id || Date.now().toString());
+    const noteData = { ...form, id: noteId };
+
+    setHasUnsavedChanges(true);
 
     if (editingNote) {
       setNotes(notes.map(n => n.id.toString() === editingNote.toString() ? noteData : n))

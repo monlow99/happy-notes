@@ -37,38 +37,45 @@ self.onmessage = async (event) => {
         }
 
         if (action === 'encode-mp3') {
-            // Lógica de codificación MP3 usando lamejs
-            if (lamejsCode && !self.lamejs) {
-                try {
-                    const blob = new Blob([lamejsCode], { type: 'application/javascript' });
-                    importScripts(URL.createObjectURL(blob));
-                } catch (e) { console.error("Error cargando lamejs local", e); }
-            }
-
-            // Fallback a CDN si no se cargó
-            if (!self.lamejs) {
-                try {
-                    importScripts('https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js');
-                } catch (e) {
-                    throw new Error("No se pudo cargar la librería de audio MP3");
+            try {
+                // Lógica de codificación MP3 usando lamejs
+                if (lamejsCode && !self.lamejs) {
+                    try {
+                        const blob = new Blob([lamejsCode], { type: 'application/javascript' });
+                        importScripts(URL.createObjectURL(blob));
+                    } catch (e) { console.error("Error cargando lamejs local", e); }
                 }
-            }
 
-            if (self.lamejs) {
-                self.postMessage({ status: 'processing', message: 'Comprimiendo audio MP3...' });
-                const mp3encoder = new self.lamejs.Mp3Encoder(1, sampleRate || 44100, 128);
-                const samples = new Int16Array(audio.length);
-                for (let i = 0; i < audio.length; i++) {
-                    samples[i] = Math.max(-32768, Math.min(32767, audio[i] * 32768));
+                // Fallback a CDN si no se cargó
+                if (!self.lamejs) {
+                    try {
+                        importScripts('https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js');
+                    } catch (e) {
+                        // Si falla MP3, el worker seguirá vivo para intentar WAV o informar
+                    }
                 }
-                const mp3Data = [];
-                const mp3buf = mp3encoder.encodeBuffer(samples);
-                if (mp3buf.length > 0) mp3Data.push(new Uint8Array(mp3buf));
-                const end = mp3encoder.flush();
-                if (end.length > 0) mp3Data.push(new Uint8Array(end));
 
-                const blob = new Blob(mp3Data, { type: 'audio/mp3' });
-                self.postMessage({ status: 'mp3-complete', blob: blob });
+                if (self.lamejs) {
+                    self.postMessage({ status: 'processing', message: 'Comprimiendo audio MP3...' });
+                    const mp3encoder = new self.lamejs.Mp3Encoder(1, sampleRate || 44100, 128);
+                    const samples = new Int16Array(audio.length);
+                    for (let i = 0; i < audio.length; i++) {
+                        samples[i] = Math.max(-32768, Math.min(32767, audio[i] * 32768));
+                    }
+                    const mp3Data = [];
+                    const mp3buf = mp3encoder.encodeBuffer(samples);
+                    if (mp3buf.length > 0) mp3Data.push(new Uint8Array(mp3buf));
+                    const end = mp3encoder.flush();
+                    if (end.length > 0) mp3Data.push(new Uint8Array(end));
+
+                    const blobMp3 = new Blob(mp3Data, { type: 'audio/mp3' });
+                    self.postMessage({ status: 'audio-complete', blob: blobMp3, format: 'mp3' });
+                } else {
+                    self.postMessage({ status: 'audio-error', message: 'Codificador MP3 no disponible. Se conservará el original WAV.' });
+                }
+            } catch (err) {
+                console.warn("Encoding to MP3 failed:", err);
+                self.postMessage({ status: 'audio-error', message: 'Error de compresión: ' + err.message });
             }
             return;
         }
