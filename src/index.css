@@ -320,6 +320,46 @@ body {
   margin-bottom: 3.5rem;
 }
 
+.nav-link {
+  padding: 0.9rem 1.4rem;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  transition: var(--transition);
+  color: var(--text-dim);
+  cursor: pointer;
+  margin-bottom: 0.6rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.nav-link:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.03);
+  transform: translateX(4px);
+}
+
+.nav-link.active {
+  background: var(--surface-bright);
+  color: #fff;
+  border-color: var(--border-soft);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.nav-link.active .icon-box {
+  color: var(--accent-primary);
+}
+
+.icon-box {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
 .content-area {
   flex: 1;
   padding: 5rem 7rem;
