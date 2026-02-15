@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import * as XLSX from 'xlsx'
+import * as docx from "docx";
+import mammoth from "mammoth";
 import {
   Clock,
   CloudRain,
@@ -22,7 +24,9 @@ import {
   Tag,
   Download,
   FileText,
-  Share2
+  Share2,
+  Upload,
+  FileDown
 } from 'lucide-react'
 import './index.css'
 
@@ -61,7 +65,25 @@ function App() {
   const [notes, setNotes] = useState([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingNote, setEditingNote] = useState(null)
-  const [form, setForm] = useState({ title: '', content: '', date: new Date().toISOString().split('T')[0] })
+  const [form, setForm] = useState({
+    title: '',
+    content: '',
+    date: new Date().toISOString().split('T')[0],
+    category: 'General',
+    pinned: false,
+    type: 'note',
+    attachment: null,
+    attachmentName: null
+  })
+
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
+  }
 
   const [isRegistering, setIsRegistering] = useState(false)
   const [regName, setRegName] = useState('')
@@ -341,13 +363,32 @@ function App() {
   }
 
   const saveNote = () => {
-    if (!form.title.trim() && !form.content.trim()) return
+    if (!form.title.trim() && !form.content.trim() && !form.attachment) return
+    const noteData = { ...form, id: editingNote || Date.now() };
+
     if (editingNote) {
-      setNotes(notes.map(n => n.id === editingNote ? { ...n, ...form } : n))
+      setNotes(notes.map(n => n.id === editingNote ? noteData : n))
     } else {
-      setNotes([{ ...form, id: Date.now(), pinned: false, category: form.category || 'General', location: weather?.city || null }, ...notes])
+      setNotes([{ ...noteData, pinned: false, location: weather?.city || null }, ...notes])
     }
     setIsModalOpen(false); setEditingNote(null);
+  }
+
+  const handleGenericFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const base64 = await fileToBase64(file);
+    const type = file.name.endsWith('.pdf') ? 'pdf' : file.name.endsWith('.docx') ? 'word' : (file.name.endsWith('.xlsx') || file.name.endsWith('.csv')) ? 'excel' : 'file';
+
+    setForm({
+      ...form,
+      title: form.title || file.name.split('.')[0],
+      type: type,
+      attachment: base64,
+      attachmentName: file.name
+    });
+    setSettingsStatus(`Archivo ${file.name} adjuntado.`);
+    setTimeout(() => setSettingsStatus(''), 2000);
   }
 
   const togglePin = (id) => {
@@ -366,6 +407,60 @@ function App() {
 
   const exportToPDF = () => {
     window.print()
+  }
+
+  const exportToWord = (note) => {
+    const { Document, Packer, Paragraph, TextRun, HeadingLevel } = window.docx;
+    const doc = new Document({
+      sections: [{
+        properties: {},
+        children: [
+          new Paragraph({ text: note.title || "Sin Título", heading: HeadingLevel.HEADING_1 }),
+          new Paragraph({ children: [new TextRun({ text: `Fecha: ${note.date}`, bold: true })] }),
+          new Paragraph({ children: [new TextRun({ text: `Categoría: ${note.category || "General"}`, italic: true })] }),
+          new Paragraph({ text: "" }),
+          new Paragraph({ text: note.content }),
+        ],
+      }],
+    });
+
+    Packer.toBlob(doc).then((blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${note.title || 'nota'}.docx`;
+      a.click();
+    });
+  }
+
+  const importFromExcel = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const bstr = evt.target.result;
+      const wb = XLSX.read(bstr, { type: 'binary' });
+      const wsname = wb.SheetNames[0];
+      const ws = wb.Sheets[wsname];
+      const data = XLSX.utils.sheet_to_json(ws);
+
+      const newNote = {
+        id: Date.now(),
+        title: file.name.split('.')[0],
+        content: JSON.stringify(data),
+        date: new Date().toISOString().split('T')[0],
+        category: 'Personal',
+        type: 'excel',
+        attachment: null, // Opcional: guardar original
+        pinned: false
+      };
+
+      setNotes([newNote, ...notes]);
+      setSettingsStatus(`Tabla ${file.name} importada para edición.`);
+      setTimeout(() => setSettingsStatus(''), 4000);
+    };
+    reader.readAsBinaryString(file);
   }
 
   const exportAllToExcel = () => {
@@ -389,6 +484,34 @@ function App() {
       window.print();
       setIsPrintingReport(false);
     }, 200);
+  }
+
+  const importFromWord = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      const arrayBuffer = evt.target.result;
+      try {
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        const text = result.value;
+        const newNote = {
+          id: Date.now(),
+          title: file.name.replace('.docx', ''),
+          content: text,
+          date: new Date().toISOString().split('T')[0],
+          category: 'General',
+          pinned: false
+        };
+        setNotes([newNote, ...notes]);
+        setSettingsStatus('Documento Word importado como nota.');
+        setTimeout(() => setSettingsStatus(''), 4000);
+      } catch (err) {
+        setSettingsStatus('Error al leer el archivo Word.');
+      }
+    };
+    reader.readAsArrayBuffer(file);
   }
 
   const timeString = time.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
@@ -684,9 +807,20 @@ function App() {
                     <button className="btn btn-secondary" onClick={exportAllToExcel}>
                       <FileText size={18} color="#22c55e" /> Reporte Excel
                     </button>
+                    <label className="btn btn-secondary" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                      <Upload size={18} color="#3b82f6" /> Importar Excel
+                      <input type="file" accept=".xlsx, .xls, .csv" style={{ display: 'none' }} onChange={importFromExcel} />
+                    </label>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.2rem' }}>
                     <button className="btn btn-secondary" onClick={exportAllToPDFReport}>
-                      <Download size={18} color="#ef4444" /> Reporte PDF (Completo)
+                      <Download size={18} color="#ef4444" /> Reporte PDF
                     </button>
+                    <label className="btn btn-secondary" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                      <Upload size={18} color="#8b5cf6" /> Importar Word
+                      <input type="file" accept=".docx" style={{ display: 'none' }} onChange={importFromWord} />
+                    </label>
                   </div>
 
                   <button className="btn btn-secondary" style={{ width: '100%', color: 'var(--error)' }} onClick={() => {
@@ -732,8 +866,9 @@ function App() {
                         </div>
                         <p style={{ display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden', color: 'var(--text-main)' }}>{note.content}</p>
                         <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: 0.3, fontSize: '0.8rem', fontWeight: 800, paddingTop: '1.5rem' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             {note.location && <><MapPin size={12} /> {note.location}</>}
+                            {note.attachment && <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--accent-primary)' }}><FileText size={12} /> Adjunto</div>}
                           </div>
                           <div>{note.date}</div>
                         </div>
@@ -801,18 +936,78 @@ function App() {
             </div>
 
             <div className="form-group">
-              <label className="unit-sub">Contenido</label>
-              <textarea className="form-input no-icon content-textarea" placeholder="Escribe aquí..." value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} />
+              <label className="unit-sub" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>{form.type === 'excel' ? 'Editor de Tabla (Excel)' : 'Contenido'}</span>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  {form.type === 'excel' && (
+                    <button className="btn-link" style={{ fontSize: '0.7rem' }} onClick={() => setForm({ ...form, type: 'note' })}>Volver a Texto</button>
+                  )}
+                  <label style={{ cursor: 'pointer', fontSize: '0.7rem', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Plus size={14} /> {form.attachment ? 'Cambiar Adjunto' : 'Adjuntar PDF/Word/Excel'}
+                    <input type="file" style={{ display: 'none' }} accept=".pdf,.doc,.docx,.xls,.xlsx,.csv" onChange={handleGenericFileUpload} />
+                  </label>
+                </div>
+              </label>
+
+              {form.type === 'excel' ? (
+                <div style={{ maxHeight: '300px', overflow: 'auto', border: '1px solid var(--border-soft)', borderRadius: '12px', background: 'var(--surface-mid)' }}>
+                  <table className="excel-editor-table">
+                    <thead>
+                      <tr>
+                        {Object.keys(Array.isArray(JSON.parse(form.content || '[]')) ? (JSON.parse(form.content || '[]')[0] || {}) : {}).map(key => (
+                          <th key={key}>{key}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(Array.isArray(JSON.parse(form.content || '[]')) ? JSON.parse(form.content || '[]') : []).map((row, idx) => (
+                        <tr key={idx}>
+                          {Object.values(row).map((val, vIdx) => (
+                            <td key={vIdx}>{val}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <p style={{ padding: '1rem', fontSize: '0.7rem', opacity: 0.5, textAlign: 'center' }}>Modo visualización de tabla disponible. Edita el texto para cambios profundos.</p>
+                </div>
+              ) : (
+                <textarea className="form-input no-icon content-textarea" placeholder="Escribe aquí..." value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} />
+              )}
             </div>
 
+            {form.attachment && (
+              <div style={{ marginBottom: '1.5rem', padding: '0.8rem', background: 'rgba(0,0,0,0.1)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--border-soft)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <FileText size={18} color="var(--accent-primary)" />
+                  <span style={{ fontSize: '0.8rem', fontWeight: 700 }}>{form.attachmentName || 'Archivo adjunto'}</span>
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <a href={form.attachment} download={form.attachmentName || 'adjunto'} className="btn btn-secondary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.65rem' }}>Descargar</a>
+                  <button className="btn btn-secondary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.65rem', color: 'var(--error)' }} onClick={() => setForm({ ...form, attachment: null, attachmentName: null })}>Quitar</button>
+                </div>
+              </div>
+            )}
+
             {editingNote && (
-              <div className="export-actions">
+              <div className="export-actions" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.8rem' }}>
                 <button className="btn-export" onClick={() => exportToText(form)}>
                   <FileText size={16} /> Exportar TXT
                 </button>
-                <button className="btn-export" onClick={exportToPDF}>
+                <button className="btn-export" onClick={() => exportToPDF()}>
                   <Download size={16} /> Exportar PDF
                 </button>
+                <button className="btn-export" onClick={() => exportToWord(form)}>
+                  <FileDown size={16} /> Exportar Word
+                </button>
+                {form.type === 'pdf' && form.attachment && (
+                  <button className="btn-export" style={{ background: 'var(--accent-primary)', color: '#fff' }} onClick={() => {
+                    const win = window.open();
+                    win.document.write(`<iframe src="${form.attachment}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
+                  }}>
+                    <Share2 size={16} /> Ver PDF Full
+                  </button>
+                )}
               </div>
             )}
 

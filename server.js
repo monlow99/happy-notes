@@ -38,6 +38,8 @@ db.serialize(() => {
     location TEXT,
     pinned BOOLEAN DEFAULT 0,
     category TEXT,
+    type TEXT DEFAULT 'note',
+    attachment TEXT,
     FOREIGN KEY (user_id) REFERENCES users (id)
   )`, (err) => {
         if (!err) {
@@ -45,6 +47,8 @@ db.serialize(() => {
             db.run("ALTER TABLE notes ADD COLUMN category TEXT", () => { });
             db.run("ALTER TABLE notes ADD COLUMN location TEXT", () => { });
             db.run("ALTER TABLE notes ADD COLUMN pinned BOOLEAN DEFAULT 0", () => { });
+            db.run("ALTER TABLE notes ADD COLUMN type TEXT DEFAULT 'note'", () => { });
+            db.run("ALTER TABLE notes ADD COLUMN attachment TEXT", () => { });
         }
     });
 });
