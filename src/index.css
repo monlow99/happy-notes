@@ -245,6 +245,53 @@ body {
 }
 
 /* 🎮 Global Components */
+.form-group {
+  width: 100%;
+  margin-bottom: 2rem;
+  text-align: left;
+  position: relative;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 1.25rem;
+  color: var(--accent-primary);
+  opacity: 0.6;
+  pointer-events: none;
+  transition: var(--transition);
+}
+
+.form-input {
+  width: 100%;
+  background: var(--surface-mid);
+  border: 1px solid var(--border-soft);
+  border-radius: 18px;
+  padding: 1.1rem 1.1rem 1.1rem 3.5rem;
+  color: #fff;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: var(--transition);
+  outline: none;
+}
+
+.form-input:focus {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.form-input:focus+.input-icon {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
 .btn {
   padding: 1rem 2.5rem;
   border-radius: 18px;

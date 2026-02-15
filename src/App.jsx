@@ -238,64 +238,71 @@ function App() {
 
               <div className="auth-info-banner"><ShieldCheck size={16} color="var(--accent-primary)" /> Cifrado local de extremo a extremo</div>
 
-              <div style={{ textAlign: 'left', marginBottom: '1.5rem', width: '100%' }}>
-                <label className="unit-sub" style={{ marginLeft: '1.2rem', display: 'block', marginBottom: '0.6rem' }}>Nombre</label>
-                <input type="text" className="form-input" placeholder="Tu nombre..." value={regName} onChange={e => setRegName(e.target.value)} autoFocus />
+              <div className="form-group">
+                <label className="unit-sub" style={{ marginLeft: '1rem', display: 'block', marginBottom: '0.6rem' }}>Nombre de Usuario</label>
+                <div className="input-wrapper">
+                  <input type="text" className="form-input" placeholder="¿Cómo te llamas?" value={regName} onChange={e => setRegName(e.target.value)} autoFocus />
+                  <User className="input-icon" size={20} />
+                </div>
               </div>
 
-              <div style={{ textAlign: 'left', marginBottom: '3.5rem', width: '100%' }}>
-                <label className="unit-sub" style={{ marginLeft: '1.2rem', display: 'block', marginBottom: '0.6rem' }}>PIN secreto</label>
-                <input type="password" maxLength="4" className="form-input" style={{ textAlign: 'center', letterSpacing: '0.8rem' }} placeholder="••••" value={regPass} onChange={e => setRegPass(e.target.value)} />
+              <div className="form-group">
+                <label className="unit-sub" style={{ marginLeft: '1rem', display: 'block', marginBottom: '0.6rem' }}>PIN de Acceso (4 dígitos)</label>
+                <div className="input-wrapper">
+                  <input type="password" maxLength="4" className="form-input" style={{ letterSpacing: '0.8rem', fontWeight: 900 }} placeholder="••••" value={regPass} onChange={e => setRegPass(e.target.value)} />
+                  <ShieldCheck className="input-icon" size={20} />
+                </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', width: '100%' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', width: '100%', marginTop: '1rem' }}>
                 <button className="btn btn-secondary" onClick={() => setIsRegistering(false)}>Atrás</button>
-                <button className="btn btn-primary" onClick={handleCreateProfile}>Continuar</button>
+                <button className="btn btn-primary" onClick={handleCreateProfile}>Crear Perfil</button>
               </div>
             </div>
-          ) : !selectedUser ? (
-            <>
-              <h1>Happy Notes.</h1>
-              <p className="auth-subtitle">Captura tus visiones en un entorno perfectamente equilibrado.</p>
+          ) :
+            !selectedUser ? (
+              <>
+                <h1>Happy Notes.</h1>
+                <p className="auth-subtitle">Captura tus visiones en un entorno perfectamente equilibrado.</p>
 
-              <StatusApplets />
+                <StatusApplets />
 
-              <div className="auth-info-banner"><User size={16} color="var(--accent-primary)" /> Selecciona una identidad para entrar</div>
+                <div className="auth-info-banner"><User size={16} color="var(--accent-primary)" /> Selecciona una identidad para entrar</div>
 
-              <div className="profile-grid-container">
-                <div className="profile-scroll">
-                  {profiles.map(user => (
-                    <div key={user.id} className="profile-item" onClick={() => setSelectedUser(user)}>
-                      <div className="profile-avatar-box">{user.avatar}</div>
-                      <span style={{ fontSize: '1rem', fontWeight: 700 }}>{user.name}</span>
+                <div className="profile-grid-container">
+                  <div className="profile-scroll">
+                    {profiles.map(user => (
+                      <div key={user.id} className="profile-item" onClick={() => setSelectedUser(user)}>
+                        <div className="profile-avatar-box">{user.avatar}</div>
+                        <span style={{ fontSize: '1rem', fontWeight: 700 }}>{user.name}</span>
+                      </div>
+                    ))}
+                    <div className="profile-item" onClick={() => setIsRegistering(true)} style={{ borderStyle: 'dashed', opacity: 0.5 }}>
+                      <Plus size={32} strokeWidth={3} />
+                      <span style={{ fontSize: '0.8rem', fontWeight: 700, opacity: 0.5 }}>NUEVO</span>
                     </div>
-                  ))}
-                  <div className="profile-item" onClick={() => setIsRegistering(true)} style={{ borderStyle: 'dashed', opacity: 0.5 }}>
-                    <Plus size={32} strokeWidth={3} />
-                    <span style={{ fontSize: '0.8rem', fontWeight: 700, opacity: 0.5 }}>NUEVO</span>
                   </div>
                 </div>
-              </div>
-            </>
-          ) : (
-            <div className="login-flow" style={{ width: '100%' }}>
-              <div className="profile-identity" style={{ marginBottom: '3.5rem' }}>
-                <div style={{ width: '100px', height: '100px', background: 'var(--accent-gradient)', color: '#fff', borderRadius: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', fontWeight: 800, margin: '0 auto 1.5rem', boxShadow: '0 20px 50px var(--accent-glow)' }}>{selectedUser.avatar}</div>
-                <h2>Hola, {selectedUser.name}</h2>
-              </div>
-
-              <div className="pin-input-area" onClick={() => pinInputRef.current.focus()}>
-                <div className="pass-dot-container">
-                  {[1, 2, 3, 4].map(i => (
-                    <div key={i} className={`pass-dot ${password.length >= i ? 'filled' : ''} ${error ? 'error' : ''}`}></div>
-                  ))}
+              </>
+            ) : (
+              <div className="login-flow" style={{ width: '100%' }}>
+                <div className="profile-identity" style={{ marginBottom: '3.5rem' }}>
+                  <div style={{ width: '100px', height: '100px', background: 'var(--accent-gradient)', color: '#fff', borderRadius: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', fontWeight: 800, margin: '0 auto 1.5rem', boxShadow: '0 20px 50px var(--accent-glow)' }}>{selectedUser.avatar}</div>
+                  <h2>Hola, {selectedUser.name}</h2>
                 </div>
-                <input ref={pinInputRef} type="password" maxLength="4" className="form-input" style={{ opacity: 0, position: 'absolute' }} value={password} onChange={e => setPassword(e.target.value)} />
-              </div>
 
-              <button className="btn btn-secondary" style={{ width: '100%', marginTop: '3rem' }} onClick={() => { setSelectedUser(null); setPassword(''); setError(false); }}>Cambiar Perfil</button>
-            </div>
-          )}
+                <div className="pin-input-area" onClick={() => pinInputRef.current.focus()}>
+                  <div className="pass-dot-container">
+                    {[1, 2, 3, 4].map(i => (
+                      <div key={i} className={`pass-dot ${password.length >= i ? 'filled' : ''} ${error ? 'error' : ''}`}></div>
+                    ))}
+                  </div>
+                  <input ref={pinInputRef} type="password" maxLength="4" className="form-input" style={{ opacity: 0, position: 'absolute' }} value={password} onChange={e => setPassword(e.target.value)} />
+                </div>
+
+                <button className="btn btn-secondary" style={{ width: '100%', marginTop: '3rem' }} onClick={() => { setSelectedUser(null); setPassword(''); setError(false); }}>Cambiar Perfil</button>
+              </div>
+            )}
         </div>
       </div>
     )
