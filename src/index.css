@@ -1,30 +1,27 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Caveat:wght@400;700&family=Inter:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Caveat:wght@400;700&family=Montserrat:wght@300;400;600;800&family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&family=Quicksand:wght@400;600;700&display=swap');
 
 :root {
-  /* 🎨 UI UX PRO MAX - Slate Emerald Palette */
+  /* Default: Slate Emerald */
   --bg-dark: #020617;
   --surface-low: rgba(15, 23, 42, 0.4);
   --surface-mid: rgba(30, 41, 59, 0.6);
   --surface-bright: rgba(255, 255, 255, 0.03);
   --border-soft: rgba(255, 255, 255, 0.06);
   --border-active: rgba(255, 255, 255, 0.12);
-
-  /* Accent System - Emerald focus */
   --accent-primary: #10b981;
   --accent-secondary: #0ea5e9;
   --accent-gradient: linear-gradient(135deg, #10b981 0%, #0ea5e9 100%);
   --accent-glow: rgba(16, 185, 129, 0.2);
-
-  /* Text System */
   --text-main: #f1f5f9;
   --text-dim: #94a3b8;
   --text-muted: #475569;
+  --main-font: 'Plus Jakarta Sans', sans-serif;
 
   /* Scaling System (Dynamic) */
   --ui-scale: 1;
   --fluid-gap: calc(2rem * var(--ui-scale));
-  --fluid-padding: calc(clamp(2rem, 5vw, 7rem) * var(--ui-scale));
-  --card-min-width: calc(320px * var(--ui-scale));
+  --fluid-padding: calc(clamp(1rem, 4vw, 5rem) * var(--ui-scale));
+  --card-min-width: calc(280px * var(--ui-scale));
 
   /* Motion */
   --radius-xl: calc(32px * var(--ui-scale));
@@ -32,13 +29,74 @@
   --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
   --transition: all 0.4s var(--ease-premium);
 
-  /* Utility Colors */
   --error: #ef4444;
   --success: #10b981;
 }
 
+/* 🌙 Theme: Midnight Pro (Deep Blue) */
+body.theme-midnight {
+  --bg-dark: #050b18;
+  --surface-low: rgba(7, 15, 35, 0.8);
+  --surface-mid: rgba(15, 25, 55, 0.9);
+  --surface-bright: rgba(255, 255, 255, 0.05);
+  --border-soft: rgba(255, 255, 255, 0.1);
+  --border-active: rgba(59, 130, 246, 0.3);
+  --accent-primary: #3b82f6;
+  --accent-secondary: #8b5cf6;
+  --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  --accent-glow: rgba(59, 130, 246, 0.3);
+  --text-main: #e2e8f0;
+  --text-dim: #94a3b8;
+  --main-font: 'Montserrat', sans-serif;
+}
+
+/* 🌅 Theme: Sunset Amber (Warm Dark) */
+body.theme-sunset {
+  --bg-dark: #120a05;
+  --surface-low: rgba(30, 15, 10, 0.8);
+  --surface-mid: rgba(45, 25, 15, 0.9);
+  --accent-primary: #f59e0b;
+  --accent-secondary: #ef4444;
+  --accent-gradient: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+  --accent-glow: rgba(245, 158, 11, 0.25);
+  --text-main: #fff7ed;
+  --text-dim: #fca5a5;
+  --main-font: 'Outfit', sans-serif;
+}
+
+/* 🌿 Theme: Neon Cyber (Deep Emerald / Lime) */
+body.theme-neon {
+  --bg-dark: #020617;
+  --surface-low: rgba(0, 0, 0, 0.6);
+  --surface-mid: rgba(0, 0, 0, 0.9);
+  --accent-primary: #bef264;
+  --accent-secondary: #10b981;
+  --accent-gradient: linear-gradient(135deg, #bef264 0%, #10b981 100%);
+  --accent-glow: rgba(190, 242, 100, 0.4);
+  --text-main: #f8fafc;
+  --text-dim: #84cc16;
+  --main-font: 'JetBrains Mono', monospace;
+  --border-active: #bef264;
+}
+
+/* 🌸 Theme: Lavender Mist (Light Purple) */
+body.theme-lavender {
+  --bg-dark: #fbfaff;
+  --surface-low: rgba(255, 255, 255, 0.9);
+  --surface-mid: #fff;
+  --surface-bright: #f3f4f6;
+  --border-soft: rgba(0, 0, 0, 0.05);
+  --accent-primary: #a855f7;
+  --accent-secondary: #ec4899;
+  --accent-gradient: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+  --accent-glow: rgba(168, 85, 247, 0.15);
+  --text-main: #1e1b4b;
+  --text-dim: #6366f1;
+  --main-font: 'Quicksand', sans-serif;
+}
+
 /* 🌞 Light Mode Sovereign Symmetry */
-body.light-mode {
+body.theme-light {
   --bg-dark: #f8fafc;
   --surface-low: rgba(255, 255, 255, 0.7);
   --surface-mid: rgba(255, 255, 255, 0.9);
@@ -49,25 +107,20 @@ body.light-mode {
   --text-dim: #475569;
   --text-muted: #94a3b8;
   --accent-glow: rgba(16, 185, 129, 0.15);
+  --main-font: 'Plus Jakarta Sans', sans-serif;
 }
 
-body.light-mode .bg-mesh {
+body.theme-lavender .bg-mesh,
+body.theme-light .bg-mesh {
   background:
-    radial-gradient(circle at 15% 15%, rgba(16, 185, 129, 0.05) 0%, transparent 45%),
-    radial-gradient(circle at 85% 85%, rgba(14, 165, 233, 0.05) 0%, transparent 45%),
-    radial-gradient(circle at 50% 50%, #f1f5f9 0%, transparent 100%);
+    radial-gradient(circle at 15% 15%, var(--accent-glow) 0%, transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(0, 0, 0, 0.02) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, var(--bg-dark) 0%, transparent 100%);
 }
 
-body.light-mode .note-card,
-body.light-mode .auth-card,
-body.light-mode .modal-card {
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
-}
-
-body.light-mode .user-name-tag,
-body.light-mode .nav-text,
-body.light-mode .unit-main {
-  color: var(--text-main);
+body[class*="light"],
+body[class*="lavender"] {
+  --text-main: #1e293b;
 }
 
 * {
@@ -80,9 +133,10 @@ body.light-mode .unit-main {
 body {
   background: var(--bg-dark);
   color: var(--text-main);
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: var(--main-font);
   min-height: 100vh;
   overflow-x: hidden;
+  transition: background 0.5s ease, color 0.5s ease;
 }
 
 /* 🌌 High-Performance Background Mesh */
@@ -507,12 +561,13 @@ body.is-mobile .status-container {
 }
 
 .content-wrapper {
-  max-width: calc(1400px * var(--ui-scale));
+  max-width: 1800px;
   width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   flex: 1;
+  transition: max-width 0.4s ease;
 }
 
 .section-title {
@@ -525,7 +580,7 @@ body.is-mobile .status-container {
 /* 📝 Notes Grid */
 .notes-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(calc(300px * var(--ui-scale)), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(max(150px, calc(300px * var(--ui-scale))), 1fr));
   gap: var(--fluid-gap);
   width: 100%;
   align-content: start;

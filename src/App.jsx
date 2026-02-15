@@ -30,12 +30,20 @@ const encrypt = (text) => btoa(`salt_${text}_secure`)
 const API_URL = `http://${window.location.hostname}:3001`
 
 const MOTIVACIONES = [
-  "¿Qué gran idea tienes hoy?",
-  "Captura el momento antes de que se escape.",
-  "Escribir es el primer paso para crear.",
-  "Tu creatividad no tiene límites.",
-  "Pequeñas notas construyen grandes historias.",
-  "Empieza hoy algo extraordinario."
+  "Captura el momento, diseña el futuro.",
+  "Tus ideas son la semilla del éxito.",
+  "Escribir es la pintura de la voz.",
+  "Organiza tu mente, libera tu genio.",
+  "Cada nota es un paso hacia tu gran meta."
+]
+
+const THEMES = [
+  { id: 'theme-slate', name: 'Slate Emerald', color: '#10b981', isDark: true },
+  { id: 'theme-light', name: 'Snow Emerald', color: '#10b981', isDark: false },
+  { id: 'theme-midnight', name: 'Midnight Pro', color: '#3b82f6', isDark: true },
+  { id: 'theme-sunset', name: 'Sunset Amber', color: '#f59e0b', isDark: true },
+  { id: 'theme-neon', name: 'Neon Cyber', color: '#bef264', isDark: true },
+  { id: 'theme-lavender', name: 'Lavender Mist', color: '#a855f7', isDark: false }
 ]
 
 function App() {
@@ -70,9 +78,8 @@ function App() {
   const [loginIdInput, setLoginIdInput] = useState('')
 
   // --- New Features State ---
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    const saved = localStorage.getItem('happy-theme');
-    return saved !== 'light'; // Default to dark
+  const [activeTheme, setActiveTheme] = useState(() => {
+    return localStorage.getItem('happy-theme') || 'theme-slate'
   })
   const [activeCategory, setActiveCategory] = useState('Todas')
   const [categories, setCategories] = useState(['General', 'Trabajo', 'Personal', 'Ideas'])
@@ -97,13 +104,10 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (!isDarkMode) {
-      document.body.classList.add('light-mode');
-    } else {
-      document.body.classList.remove('light-mode');
-    }
-    localStorage.setItem('happy-theme', isDarkMode ? 'dark' : 'light');
-  }, [isDarkMode])
+    THEMES.forEach(t => document.body.classList.remove(t.id));
+    document.body.classList.add(activeTheme);
+    localStorage.setItem('happy-theme', activeTheme);
+  }, [activeTheme])
 
   useEffect(() => {
     document.documentElement.style.setProperty('--ui-scale', uiScale);
@@ -546,11 +550,23 @@ function App() {
       <div className="bg-mesh"></div>
       <header className="app-header">
         <div className="header-user-badge">
-          <button className="logout-edge-btn" style={{ background: 'var(--surface-bright)', color: 'var(--accent-primary)', marginRight: '0.5rem' }} onClick={() => setIsDarkMode(!isDarkMode)} title="Cambiar Tema">
-            {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
-          <div className="user-avatar-mini">{currentUser.avatar}</div>
-          <span className="user-name-tag">{currentUser.name}</span>
+          <div style={{ display: 'flex', gap: '1.2rem', alignItems: 'center' }}>
+            <button
+              className="logout-edge-btn"
+              onClick={() => {
+                const currentIndex = THEMES.findIndex(t => t.id === activeTheme);
+                const nextIndex = (currentIndex + 1) % THEMES.length;
+                setActiveTheme(THEMES[nextIndex].id);
+              }}
+              title="Cambiar Tema"
+            >
+              <Moon size={18} fill={THEMES.find(t => t.id === activeTheme)?.isDark ? "currentColor" : "none"} />
+            </button>
+            <div className="user-profile-tag" onClick={() => setIsSettingsOpen(true)}>
+              <div className="user-avatar-mini">{currentUser.avatar}</div>
+              <span className="user-name-tag">{currentUser.name}</span>
+            </div>
+          </div>
           <button className="logout-edge-btn" onClick={() => { setCurrentUser(null); setSelectedUser(null); }} title="Cerrar Sesión">
             <LogOut size={18} />
           </button>
@@ -592,17 +608,41 @@ function App() {
                   </div>
                   <input
                     type="range"
-                    min="0.8"
-                    max="1.3"
+                    min="0.3"
+                    max="1.5"
                     step="0.05"
                     value={uiScale}
                     onChange={(e) => setUiScale(parseFloat(e.target.value))}
                     style={{ width: '100%', accentColor: 'var(--accent-primary)', height: '6px', cursor: 'pointer' }}
                   />
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', fontSize: '0.7rem', opacity: 0.4, fontWeight: 800 }}>
-                    <span>COMPACTO</span>
-                    <span>POR DEFECTO</span>
-                    <span>RELAJADO</span>
+                    <span>MIN (30%)</span>
+                    <span>NORMAL</span>
+                    <span>MAX (150%)</span>
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '3rem' }}>
+                  <h3 style={{ marginBottom: '1.5rem' }}>Colección de Temas</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '0.8rem' }}>
+                    {THEMES.map(t => (
+                      <div
+                        key={t.id}
+                        onClick={() => setActiveTheme(t.id)}
+                        className={`note-card ${activeTheme === t.id ? 'active' : ''}`}
+                        style={{
+                          padding: '1rem',
+                          cursor: 'pointer',
+                          textAlign: 'center',
+                          border: activeTheme === t.id ? '2px solid' + t.color : '1px solid var(--border-soft)',
+                          background: activeTheme === t.id ? 'rgba(0,0,0,0.1)' : 'var(--surface-bright)',
+                          transition: 'var(--transition)'
+                        }}
+                      >
+                        <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: t.color, margin: '0 auto 0.8rem' }}></div>
+                        <div style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase' }}>{t.name}</div>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
