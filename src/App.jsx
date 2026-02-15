@@ -232,7 +232,7 @@ function App() {
         <div className="bg-mesh"></div>
         <div className={`auth-card ${isShaking ? 'shake' : ''}`}>
           {isRegistering ? (
-            <div className="registration-flow" style={{ width: '100%' }}>
+            <div className="registration-flow">
               <h1>Happy Notes</h1>
               <p className="auth-subtitle">Crea un espacio seguro para tus pensamientos.</p>
 
@@ -254,7 +254,7 @@ function App() {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', width: '100%', marginTop: '1rem' }}>
+              <div className="auth-actions">
                 <button className="btn btn-secondary" onClick={() => setIsRegistering(false)}>Atrás</button>
                 <button className="btn btn-primary" onClick={handleCreateProfile}>Crear Perfil</button>
               </div>
@@ -285,9 +285,9 @@ function App() {
                 </div>
               </>
             ) : (
-              <div className="login-flow" style={{ width: '100%' }}>
-                <div className="profile-identity" style={{ marginBottom: '3.5rem' }}>
-                  <div style={{ width: '100px', height: '100px', background: 'var(--accent-gradient)', color: '#fff', borderRadius: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', fontWeight: 800, margin: '0 auto 1.5rem', boxShadow: '0 20px 50px var(--accent-glow)' }}>{selectedUser.avatar}</div>
+              <div className="login-flow">
+                <div className="profile-identity">
+                  <div className="profile-avatar-active">{selectedUser.avatar}</div>
                   <h2>Hola, {selectedUser.name}</h2>
                 </div>
 
@@ -300,7 +300,7 @@ function App() {
                   <input ref={pinInputRef} type="password" maxLength="4" className="form-input" style={{ opacity: 0, position: 'absolute' }} value={password} onChange={e => setPassword(e.target.value)} />
                 </div>
 
-                <button className="btn btn-secondary" style={{ width: '100%', marginTop: '3rem' }} onClick={() => { setSelectedUser(null); setPassword(''); setError(false); }}>Cambiar Perfil</button>
+                <button className="btn btn-secondary" style={{ width: '100%' }} onClick={() => { setSelectedUser(null); setPassword(''); setError(false); }}>Cambiar Perfil</button>
               </div>
             )}
         </div>
@@ -406,24 +406,24 @@ function App() {
       </button>
 
       {isModalOpen && (
-        <div className="modal-overlay" style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setIsModalOpen(false)}>
-          <div className="auth-card" style={{ maxWidth: '680px', padding: '5rem', textAlign: 'left', display: 'block' }} onClick={e => e.stopPropagation()}>
-            <h2 style={{ fontSize: '2.5rem', fontFamily: 'Caveat, cursive', marginBottom: '3rem', textAlign: 'center' }}>{editingNote ? 'Editar Nota' : 'Nueva Idea'}</h2>
+        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+          <div className="modal-card" onClick={e => e.stopPropagation()}>
+            <h2 className="modal-title">{editingNote ? 'Editar Nota' : 'Nueva Idea'}</h2>
 
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label className="unit-sub" style={{ paddingLeft: '1rem', display: 'block', marginBottom: '0.6rem' }}>Título</label>
-              <input className="form-input" placeholder="Nombre de la nota..." value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
+            <div className="form-group">
+              <label className="unit-sub">Título</label>
+              <input className="form-input no-icon" placeholder="Nombre de la nota..." value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
             </div>
 
-            <div style={{ marginBottom: '3rem' }}>
-              <label className="unit-sub" style={{ paddingLeft: '1rem', display: 'block', marginBottom: '0.6rem' }}>Contenido</label>
-              <textarea className="form-input" rows="8" style={{ resize: 'none' }} placeholder="Escribe aquí..." value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} />
+            <div className="form-group">
+              <label className="unit-sub">Contenido</label>
+              <textarea className="form-input no-icon content-textarea" placeholder="Escribe aquí..." value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+            <div className="modal-actions">
               <button className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Cerrar</button>
-              {editingNote && <button className="btn btn-secondary" style={{ color: 'var(--error)' }} onClick={() => deleteNote(editingNote)}>Eliminar</button>}
-              <button className="btn btn-primary" style={{ gridColumn: editingNote ? 'auto' : 'span 2' }} onClick={saveNote}><Save size={18} /> Guardar</button>
+              {editingNote && <button className="btn btn-secondary delete-btn" onClick={() => deleteNote(editingNote)}>Eliminar</button>}
+              <button className="btn btn-primary save-btn" style={{ gridColumn: editingNote ? 'auto' : 'span 2' }} onClick={saveNote}><Save size={18} /> Guardar</button>
             </div>
           </div>
         </div>
