@@ -1007,15 +1007,17 @@ body.is-mobile .status-container {
 }
 
 .modal-card {
-  background: var(--surface-low);
-  backdrop-filter: blur(64px);
-  -webkit-backdrop-filter: blur(64px);
+  background: var(--bg-dark);
   border: 1px solid var(--border-soft);
+  width: 95%;
+  max-width: 650px;
+  max-height: 90vh;
   border-radius: var(--radius-xl);
-  padding: 4rem;
-  width: 100%;
-  max-width: 680px;
-  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
+  padding: 2.5rem;
+  position: relative;
+  overflow-y: auto;
+  box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(20px);
   animation: entrance 0.6s var(--ease-premium);
 }
 

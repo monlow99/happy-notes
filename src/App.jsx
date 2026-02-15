@@ -113,6 +113,7 @@ function App() {
   const [uiScale, setUiScale] = useState(() => parseFloat(localStorage.getItem('happy-ui-scale')) || 1)
   const [syncStatus, setSyncStatus] = useState('')
   const [isSyncing, setIsSyncing] = useState(false)
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
 
   // --- Clock & Weather State ---
   const [time, setTime] = useState(new Date())
@@ -390,32 +391,31 @@ function App() {
   useEffect(() => {
     if (currentUser) {
       const fetchNotes = async () => {
-        // Pausar polling si el modal está abierto o si estamos sincronizando cambios locales
-        if (isModalOpen || isSyncing) return;
+        // BLOQUEO CRÍTICO: No descargar si hay cambios locales sin subir
+        if (isModalOpen || isSyncing || hasUnsavedChanges) return;
 
         try {
           const res = await fetch(`${API_URL}/api/notes/${currentUser.id}`);
           const data = await res.json();
 
-          // Solo actualizar si realmente hay cambios y no hay cambios locales pendientes
-          if (JSON.stringify(data) !== JSON.stringify(notes)) {
+          if (Array.isArray(data) && JSON.stringify(data) !== JSON.stringify(notes)) {
             setNotes(data);
           }
           if (!motivation) setMotivation(MOTIVACIONES[Math.floor(Math.random() * MOTIVACIONES.length)]);
         } catch (e) { console.error("Error cargando notas:", e); }
       }
 
-      fetchNotes(); // Carga inicial
-      const interval = setInterval(fetchNotes, 10000); // Polling cada 10 segundos
+      fetchNotes();
+      const interval = setInterval(fetchNotes, 15000);
       return () => clearInterval(interval);
     }
-  }, [currentUser, isModalOpen, isSyncing])
+  }, [currentUser, isModalOpen, isSyncing, hasUnsavedChanges])
 
   useEffect(() => {
-    if (currentUser && notes.length > 0) {
+    if (currentUser && hasUnsavedChanges) {
       const syncNotes = async () => {
         setIsSyncing(true);
-        setSyncStatus('Sincronizando...');
+        setSyncStatus('Protegiendo cambios...');
         try {
           const response = await fetch(`${API_URL}/api/notes/${currentUser.id}/sync`, {
             method: 'POST',
@@ -424,19 +424,20 @@ function App() {
           });
           if (response.ok) {
             setSyncStatus('Sincronizado');
+            setHasUnsavedChanges(false); // Sincronización exitosa, ya no hay cambios pendientes
             setTimeout(() => setSyncStatus(''), 2000);
           }
         } catch (e) {
           console.error("Error sincronizando notas:", e);
-          setSyncStatus('Error de conexión');
+          setSyncStatus('Reintentando conexión...');
         } finally {
           setIsSyncing(false);
         }
       }
-      const timer = setTimeout(syncNotes, 2000); // Debounce sync 2s
+      const timer = setTimeout(syncNotes, 3000); // 3s debounce
       return () => clearTimeout(timer);
     }
-  }, [notes, currentUser])
+  }, [notes, currentUser, hasUnsavedChanges])
 
   useEffect(() => {
     if (password.length === 4 && (selectedUser || isLoginID)) {
@@ -528,6 +529,8 @@ function App() {
   const saveNote = () => {
     if (!form.title.trim() && !form.content.trim() && !form.attachment) return
     const noteData = { ...form, id: editingNote ? editingNote.toString() : Date.now().toString() };
+
+    setHasUnsavedChanges(true); // Marcamos que hay cambios sin sincronizar
 
     if (editingNote) {
       setNotes(notes.map(n => n.id.toString() === editingNote.toString() ? noteData : n))
@@ -1091,17 +1094,19 @@ function App() {
         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div className="modal-card" onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <div className="unit-sub">Editor de Notas</div>
+              <div className="unit-sub" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Sparkles size={16} color="var(--accent-primary)" /> Refinar Pensamiento
+              </div>
               <button
                 className={`logout-edge-btn ${form.pinned ? 'active' : ''}`}
                 style={{ background: form.pinned ? 'var(--accent-primary)' : 'var(--surface-bright)', color: form.pinned ? '#fff' : 'var(--text-dim)' }}
                 onClick={() => setForm({ ...form, pinned: !form.pinned })}
-                title="Fijar Nota"
+                title="Fijar para siempre"
               >
                 <Pin size={18} fill={form.pinned ? "#fff" : "none"} />
               </button>
             </div>
-            <h2 className="modal-title" style={{ marginBottom: '2rem' }}>{editingNote ? 'Refinar Idea' : 'Nueva Nota'}</h2>
+            <h2 className="modal-title" style={{ marginBottom: '2rem', fontSize: '1.8rem' }}>{editingNote ? 'Pulir Idea' : 'Captura tu Chispa'}</h2>
 
             <div className="form-group">
               <label className="unit-sub">Categoría</label>
@@ -1120,13 +1125,13 @@ function App() {
             </div>
 
             <div className="form-group">
-              <label className="unit-sub">Título</label>
-              <input className="form-input no-icon" placeholder="Nombre de la nota..." value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
+              <label className="unit-sub">Título de la Obra</label>
+              <input className="form-input no-icon" placeholder="¿Qué nombre tendrá este recuerdo?..." value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
             </div>
 
             <div className="form-group">
               <label className="unit-sub" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span>{form.type === 'excel' ? 'Editor Directo (Excel)' : 'Contenido'}</span>
+                <span>{form.type === 'excel' ? 'Editor Directo (Tabla)' : 'Tu Historia'}</span>
                 <div style={{ display: 'flex', gap: '1.2rem', alignItems: 'center' }}>
                   {!isAIReady ? (
                     <button
@@ -1211,7 +1216,7 @@ function App() {
                   </button>
                 </div>
               ) : (
-                <textarea className="form-input no-icon content-textarea" placeholder="Escribe aquí..." value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} />
+                <textarea className="form-input no-icon content-textarea" placeholder="Aquí es donde la magia ocurre. Escribe sin miedo..." value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} />
               )}
             </div>
 
@@ -1276,10 +1281,10 @@ function App() {
               </div>
             )}
 
-            <div className="modal-actions" style={{ marginTop: '2.5rem' }}>
-              <button className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Cerrar</button>
-              {editingNote && <button className="btn btn-secondary delete-btn" onClick={() => deleteNote(editingNote)}>Eliminar</button>}
-              <button className="btn btn-primary save-btn" style={{ gridColumn: editingNote ? 'auto' : 'span 2' }} onClick={saveNote}><Save size={18} /> Guardar</button>
+            <div className="modal-actions" style={{ marginTop: '3rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '1rem' }}>
+              <button className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Cerrar sin guardar</button>
+              {editingNote && <button className="btn btn-secondary" style={{ color: 'var(--error)' }} onClick={() => deleteNote(editingNote)}>Borrar Nota</button>}
+              <button className="btn btn-primary" style={{ padding: '1rem 2rem', fontSize: '1.1rem', fontWeight: 800, letterSpacing: '0.05rem' }} onClick={saveNote}><ShieldCheck size={20} /> Preservar Idea</button>
             </div>
           </div>
         </div>
