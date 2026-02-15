@@ -434,38 +434,45 @@ body.is-mobile .status-container {
 }
 
 .btn {
-  padding: 1rem 2.5rem;
-  border-radius: 18px;
+  padding: calc(0.8rem * var(--ui-scale)) calc(1.5rem * var(--ui-scale));
+  border-radius: var(--radius-lg);
   font-weight: 700;
-  font-size: 1rem;
-  border: none;
+  font-size: calc(0.9rem * var(--ui-scale));
   cursor: pointer;
   transition: var(--transition);
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: calc(0.8rem * var(--ui-scale));
+  border: none;
+  font-family: inherit;
+  position: relative;
+  overflow: hidden;
 }
 
 .btn-primary {
   background: var(--accent-gradient);
   color: #fff;
+  box-shadow: 0 10px 25px calc(-5px * var(--ui-scale)) var(--accent-glow);
 }
 
 .btn-primary:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 15px 35px var(--accent-glow);
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px calc(-5px * var(--ui-scale)) var(--accent-glow);
+  filter: brightness(1.1);
 }
 
 .btn-secondary {
   background: var(--surface-bright);
+  color: var(--text-main);
   border: 1px solid var(--border-soft);
-  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.06);
-  transform: translateY(-2px);
+  background: var(--surface-mid);
+  border-color: var(--accent-primary);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
 /* 🏗️ Workspace Layout */
@@ -795,50 +802,64 @@ body.is-mobile .status-container {
 
 /* 🏔️ Floating Header & User Identity */
 .app-header {
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  z-index: 1000;
-  pointer-events: none;
+  height: calc(90px * var(--ui-scale));
+  padding: 0 var(--fluid-padding);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--surface-low);
+  backdrop-filter: blur(20px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .header-user-badge {
-  pointer-events: auto;
-  background: var(--surface-low);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid var(--border-soft);
-  padding: 0.4rem 0.4rem 0.4rem 0.8rem;
-  border-radius: 16px;
   display: flex;
   align-items: center;
-  gap: 0.7rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  animation: entrance 0.8s var(--ease-premium);
+  gap: calc(1.5rem * var(--ui-scale));
+}
+
+.user-profile-tag {
+  display: flex;
+  align-items: center;
+  gap: calc(0.8rem * var(--ui-scale));
+  padding: calc(0.5rem * var(--ui-scale)) calc(1.2rem * var(--ui-scale));
+  background: var(--surface-mid);
+  border: 1px solid var(--border-soft);
+  border-radius: calc(100px * var(--ui-scale));
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.user-profile-tag:hover {
+  background: var(--surface-bright);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 calc(15px * var(--ui-scale)) var(--accent-glow);
 }
 
 .user-avatar-mini {
-  width: 28px;
-  height: 28px;
+  width: calc(34px * var(--ui-scale));
+  height: calc(34px * var(--ui-scale));
   background: var(--accent-gradient);
-  border-radius: 8px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 0.8rem;
+  font-size: calc(0.9rem * var(--ui-scale));
   color: #fff;
+  box-shadow: 0 4px 10px var(--accent-glow);
 }
 
 .user-name-tag {
   font-weight: 700;
-  font-size: 0.85rem;
-  color: var(--text-main);
+  font-size: calc(0.95rem * var(--ui-scale));
+  letter-spacing: -0.01em;
 }
 
 .logout-edge-btn {
-  background: rgba(239, 68, 68, 0.1);
-  border: none;
   width: 30px;
   height: 30px;
   border-radius: 10px;

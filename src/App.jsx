@@ -109,6 +109,14 @@ function App() {
     localStorage.setItem('happy-theme', activeTheme);
   }, [activeTheme])
 
+  const applyRandomTheme = () => {
+    let newTheme;
+    do {
+      newTheme = THEMES[Math.floor(Math.random() * THEMES.length)].id;
+    } while (newTheme === activeTheme);
+    setActiveTheme(newTheme);
+  }
+
   useEffect(() => {
     document.documentElement.style.setProperty('--ui-scale', uiScale);
     localStorage.setItem('happy-ui-scale', uiScale);
@@ -549,8 +557,8 @@ function App() {
     <div className="app-layout">
       <div className="bg-mesh"></div>
       <header className="app-header">
-        <div className="header-user-badge">
-          <div style={{ display: 'flex', gap: '1.2rem', alignItems: 'center' }}>
+        <div className="content-wrapper" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', height: '100%', maxWidth: '1800px' }}>
+          <div className="header-user-badge">
             <button
               className="logout-edge-btn"
               onClick={() => {
@@ -558,18 +566,18 @@ function App() {
                 const nextIndex = (currentIndex + 1) % THEMES.length;
                 setActiveTheme(THEMES[nextIndex].id);
               }}
-              title="Cambiar Tema"
+              title="Siguiente Tema"
             >
-              <Moon size={18} fill={THEMES.find(t => t.id === activeTheme)?.isDark ? "currentColor" : "none"} />
+              <Moon size={18 * uiScale} fill={THEMES.find(t => t.id === activeTheme)?.isDark ? "currentColor" : "none"} />
             </button>
             <div className="user-profile-tag" onClick={() => setIsSettingsOpen(true)}>
               <div className="user-avatar-mini">{currentUser.avatar}</div>
               <span className="user-name-tag">{currentUser.name}</span>
             </div>
+            <button className="logout-edge-btn" onClick={() => { setCurrentUser(null); setSelectedUser(null); localStorage.removeItem('happy-session'); }} title="Cerrar Sesión">
+              <LogOut size={18 * uiScale} />
+            </button>
           </div>
-          <button className="logout-edge-btn" onClick={() => { setCurrentUser(null); setSelectedUser(null); }} title="Cerrar Sesión">
-            <LogOut size={18} />
-          </button>
         </div>
       </header>
 
@@ -623,7 +631,12 @@ function App() {
                 </div>
 
                 <div style={{ marginBottom: '3rem' }}>
-                  <h3 style={{ marginBottom: '1.5rem' }}>Colección de Temas</h3>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                    <h3 style={{ margin: 0 }}>Colección de Temas</h3>
+                    <button className="btn btn-secondary" style={{ padding: '0.4rem 1rem', fontSize: '0.7rem' }} onClick={applyRandomTheme}>
+                      <Sparkles size={14} /> TEMA ALEATORIO
+                    </button>
+                  </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '0.8rem' }}>
                     {THEMES.map(t => (
                       <div
