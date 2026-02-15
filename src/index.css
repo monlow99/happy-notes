@@ -630,11 +630,16 @@ body.is-mobile .status-container {
     gap: 1.5rem;
     display: flex;
     flex-direction: column;
+    width: 100%;
+    margin: 0;
+    padding: 0;
   }
 
   .calendar-main {
     height: auto;
     width: 100%;
+    margin: 0;
+    padding: 0;
   }
 
   .calendar-grid-container {
@@ -643,6 +648,8 @@ body.is-mobile .status-container {
     height: auto;
     flex: none;
     margin: 0;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .calendar-grid {
@@ -664,6 +671,8 @@ body.is-mobile .status-container {
     min-height: auto;
     flex: none;
     margin: 0 0 3rem 0;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .notes-grid {
