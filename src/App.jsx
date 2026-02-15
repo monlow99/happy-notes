@@ -21,13 +21,13 @@ function App() {
   const [currentUser, setCurrentUser] = useState(null)
   const [selectedUser, setSelectedUser] = useState(null)
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const [error, setError] = useState(false)
   const [isShaking, setIsShaking] = useState(false)
   const [view, setView] = useState('notes')
   const [notes, setNotes] = useState([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingNote, setEditingNote] = useState(null)
-  const [form, setForm] = useState({ title: '', content: '', color: 'default', date: new Date().toISOString().split('T')[0] })
+  const [form, setForm] = useState({ title: '', content: '', date: new Date().toISOString().split('T')[0] })
 
   const [isRegistering, setIsRegistering] = useState(false)
   const [regName, setRegName] = useState('')
@@ -65,15 +65,13 @@ function App() {
   }, [password])
 
   const handleCreateProfile = () => {
-    if (regName.trim().length < 2) { setError('Nombre corto'); return; }
-    if (regPass.length < 4) { setError('PIN de 4 dígitos'); return; }
+    if (regName.trim().length < 2) return;
+    if (regPass.length < 4) return;
     const newId = regName.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now()
     const newProfile = { id: newId, name: regName.trim(), avatar: regName.trim().charAt(0).toUpperCase(), password: encrypt(regPass) }
     setProfiles([...profiles, newProfile])
     setIsRegistering(false)
-    setRegName('')
-    setRegPass('')
-    setError('')
+    setRegName(''); setRegPass(''); setError(false);
     setSelectedUser(newProfile)
   }
 
@@ -81,13 +79,10 @@ function App() {
     const hashed = encrypt(password)
     if (hashed === selectedUser.password) {
       setCurrentUser(selectedUser)
-      setPassword('')
-      setError('')
+      setPassword(''); setError(false);
     } else {
-      setIsShaking(true)
-      setError('Incorrecto')
-      setPassword('')
-      setTimeout(() => setIsShaking(false), 500)
+      setIsShaking(true); setError(true); setPassword('');
+      setTimeout(() => { setIsShaking(false); setError(false); }, 1000)
     }
   }
 
@@ -98,11 +93,10 @@ function App() {
     } else {
       setNotes([{ ...form, id: Date.now(), pinned: false }, ...notes])
     }
-    setIsModalOpen(false)
-    setEditingNote(null)
+    setIsModalOpen(false); setEditingNote(null);
   }
 
-  // --- RENDERING ---
+  // --- AUTH VIEWS ---
   if (!currentUser) {
     return (
       <div className="login-container">
@@ -111,44 +105,50 @@ function App() {
           {isRegistering ? (
             <div className="registration-flow">
               <h1>Join.</h1>
-              <p className="auth-subtitle">Define your space</p>
-              <input type="text" className="form-input" style={{ marginBottom: '1.2rem' }} placeholder="Your name" value={regName} onChange={e => setRegName(e.target.value)} autoFocus />
-              <input type="password" maxLength="4" className="form-input" style={{ textAlign: 'center', letterSpacing: '0.5rem' }} placeholder="PIN" value={regPass} onChange={e => setRegPass(e.target.value)} />
-              <p style={{ color: 'var(--error)', margin: '1rem 0', minHeight: '1.2rem', fontSize: '0.9rem' }}>{error}</p>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.2rem' }}>
-                <button className="btn btn-secondary" onClick={() => setIsRegistering(false)}>Back</button>
-                <button className="btn btn-primary" onClick={handleCreateProfile}>Create Account</button>
+              <p className="auth-subtitle">Create your secure workspace</p>
+              <div style={{ textAlign: 'left', marginBottom: '1.5rem' }}>
+                <label style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginLeft: '1rem', display: 'block', marginBottom: '0.5rem' }}>PROFILE NAME</label>
+                <input type="text" className="form-input" placeholder="How should we call you?" value={regName} onChange={e => setRegName(e.target.value)} autoFocus />
+              </div>
+              <div style={{ textAlign: 'left', marginBottom: '2.5rem' }}>
+                <label style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginLeft: '1rem', display: 'block', marginBottom: '0.5rem' }}>SECURITY PIN (4 DIGITS)</label>
+                <input type="password" maxLength="4" className="form-input" style={{ textAlign: 'center', letterSpacing: '0.8rem' }} placeholder="••••" value={regPass} onChange={e => setRegPass(e.target.value)} />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '1rem' }}>
+                <button className="btn btn-secondary" onClick={() => setIsRegistering(false)}>Cancel</button>
+                <button className="btn btn-primary" onClick={handleCreateProfile}>Create Profile</button>
               </div>
             </div>
           ) : !selectedUser ? (
             <>
               <h1>Happy.</h1>
-              <p className="auth-subtitle">Select your profile</p>
-              <div className="profile-scroll" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '1.5rem', marginBottom: '4rem' }}>
+              <p className="auth-subtitle">Welcome back. Select your path.</p>
+              <div className="profile-scroll" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '1.2rem', marginBottom: '3rem' }}>
                 {profiles.map(user => (
-                  <div key={user.id} className="profile-item" onClick={() => setSelectedUser(user)} style={{ cursor: 'pointer', padding: '1.8rem 1rem', borderRadius: '28px', background: 'var(--surface-bright)', border: '1px solid var(--border)', transition: 'all 0.4s var(--ease-premium)' }}>
-                    <div className="profile-avatar" style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.8rem' }}>{user.avatar}</div>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 600, opacity: 0.5 }}>{user.name}</span>
+                  <div key={user.id} className="profile-item" onClick={() => setSelectedUser(user)} style={{ cursor: 'pointer', padding: '1.5rem', borderRadius: '24px', background: 'var(--surface-mid)', border: '1px solid var(--border-soft)', transition: 'var(--transition)' }}>
+                    <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--accent-primary)', marginBottom: '0.5rem' }}>{user.avatar}</div>
+                    <span style={{ fontSize: '0.8rem', opacity: 0.5, fontWeight: 600 }}>{user.name}</span>
                   </div>
                 ))}
-                <div className="profile-item" onClick={() => setIsRegistering(true)} style={{ cursor: 'pointer', padding: '1.8rem 1rem', borderRadius: '28px', border: '1px dashed var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', opacity: 0.4 }}>
+                <div className="profile-item" onClick={() => setIsRegistering(true)} style={{ cursor: 'pointer', padding: '1.5rem', borderRadius: '24px', border: '1px dashed var(--border-soft)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', opacity: 0.4 }}>
                   <div style={{ fontSize: '1.5rem' }}>+</div>
                 </div>
               </div>
             </>
           ) : (
             <div className="login-flow">
-              <div className="profile-view" style={{ marginBottom: '3rem' }}>
-                <div style={{ width: '90px', height: '90px', background: 'var(--accent)', color: '#000', borderRadius: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', fontWeight: 800, margin: '0 auto 1.5rem', boxShadow: '0 20px 40px rgba(255,255,255,0.1)' }}>{selectedUser.avatar}</div>
-                <h2 style={{ fontSize: '1.8rem', fontWeight: 700 }}>{selectedUser.name}</h2>
+              <div className="profile-identity" style={{ marginBottom: '3rem' }}>
+                <div style={{ width: '80px', height: '80px', background: 'var(--accent-gradient)', color: '#fff', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', fontWeight: 800, margin: '0 auto 1.5rem', boxShadow: '0 20px 40px var(--accent-glow)' }}>{selectedUser.avatar}</div>
+                <h2 style={{ fontSize: '1.8rem', fontWeight: 800 }}>{selectedUser.name}</h2>
+                <p style={{ opacity: 0.4, fontSize: '0.9rem', marginTop: '0.5rem' }}>Enter security PIN</p>
               </div>
               <div className="pass-dot-container">
                 {[1, 2, 3, 4].map(i => (
-                  <div key={i} className={`pass-dot ${password.length >= i ? 'filled' : ''}`}></div>
+                  <div key={i} className={`pass-dot ${password.length >= i ? 'filled' : ''} ${error ? 'error' : ''}`}></div>
                 ))}
               </div>
               <input type="password" maxLength="4" className="form-input" style={{ opacity: 0, position: 'absolute' }} value={password} onChange={e => setPassword(e.target.value)} autoFocus />
-              <button className="btn btn-secondary" style={{ width: '100%', marginTop: '3rem' }} onClick={() => { setSelectedUser(null); setPassword(''); setError(''); }}>Change Profile</button>
+              <button className="btn btn-secondary" style={{ width: '100%', marginTop: '2rem' }} onClick={() => { setSelectedUser(null); setPassword(''); setError(false); }}>Switch Profile</button>
             </div>
           )}
         </div>
@@ -156,47 +156,51 @@ function App() {
     )
   }
 
+  // --- APP WORKSPACE ---
   return (
     <div className="app-layout">
       <div className="bg-mesh"></div>
       <aside className="sidebar">
-        <h2 style={{ fontSize: '2.5rem', fontWeight: 800, letterSpacing: '-0.06em', marginBottom: '5rem' }}>Happy.</h2>
+        <h2 className="sidebar-title">Happy.</h2>
         <nav>
           <div className={`nav-link ${view === 'notes' && !isSettingsOpen ? 'active' : ''}`} onClick={() => { setView('notes'); setIsSettingsOpen(false); }}>
-            <span className="nav-icon">○</span> <span>Notes</span>
+            <div className="icon-box">📓</div> <span className="nav-text">Workspace</span>
           </div>
           <div className={`nav-link ${view === 'calendar' && !isSettingsOpen ? 'active' : ''}`} onClick={() => { setView('calendar'); setIsSettingsOpen(false); }}>
-            <span className="nav-icon">○</span> <span>Calendar</span>
+            <div className="icon-box">📅</div> <span className="nav-text">Calendar</span>
           </div>
           <div className={`nav-link ${isSettingsOpen ? 'active' : ''}`} onClick={() => setIsSettingsOpen(true)}>
-            <span className="nav-icon">○</span> <span>Settings</span>
+            <div className="icon-box">⚙️</div> <span className="nav-text">Settings</span>
           </div>
         </nav>
-        <button className="nav-link" style={{ marginTop: 'auto', background: 'none', border: 'none', width: '100%', justifyContent: 'flex-start' }} onClick={() => { setCurrentUser(null); setSelectedUser(null); }}>
-          <span className="nav-icon">¬</span> <span>Exit</span>
+        <button className="nav-link" style={{ marginTop: 'auto', background: 'none', border: 'none', width: '100%' }} onClick={() => { setCurrentUser(null); setSelectedUser(null); }}>
+          <div className="icon-box">🚪</div> <span className="nav-text">Logout</span>
         </button>
       </aside>
 
       <main className="content-area">
         {isSettingsOpen ? (
-          <div style={{ animation: 'slideIn 0.8s var(--ease-premium)' }}>
-            <h1 className="title-reveal">Settings.</h1>
-            <div className="note-card" style={{ maxWidth: '550px' }}>
-              <h3 style={{ fontSize: '1.5rem', marginBottom: '2.5rem' }}>Profile Security</h3>
+          <div style={{ animation: 'entrance 0.8s var(--ease-soft)' }}>
+            <div className="section-header">
+              <h1 className="section-title">Settings.</h1>
+              <p style={{ color: 'var(--text-dim)' }}>Manage your profile and security</p>
+            </div>
+            <div className="note-card" style={{ maxWidth: '500px' }}>
+              <h3 style={{ marginBottom: '2rem' }}>Profile Security</h3>
               <div style={{ marginBottom: '2.5rem' }}>
-                <label style={{ display: 'block', fontSize: '0.8rem', opacity: 0.4, marginBottom: '0.8rem', fontWeight: 700, textTransform: 'uppercase' }}>Update PIN</label>
-                <input type="password" maxLength="4" className="form-input" style={{ background: 'transparent' }} placeholder="Enter 4-digit PIN" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+                <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.8rem', fontWeight: 800 }}>NEW SECURITY PIN</label>
+                <input type="password" maxLength="4" className="form-input" placeholder="4 digits" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
               </div>
-              <button className="btn btn-primary" style={{ width: '100%', marginBottom: '1.5rem' }} onClick={() => {
+              <button className="btn btn-primary" style={{ width: '100%', marginBottom: '1.2rem' }} onClick={() => {
                 if (newPassword.length === 4) {
                   setProfiles(profiles.map(p => p.id === currentUser.id ? { ...p, password: encrypt(newPassword) } : p))
-                  setSettingsStatus('Updated successfully.')
+                  setSettingsStatus('Security PIN updated.')
                   setNewPassword('')
                   setTimeout(() => setSettingsStatus(''), 4000)
                 }
-              }}>Save PIN</button>
-              <button className="btn btn-secondary" style={{ width: '100%', color: 'var(--error)', borderColor: 'rgba(255, 68, 68, 0.2)' }} onClick={() => {
-                if (window.confirm('Delete profile and all data?')) {
+              }}>Update Security</button>
+              <button className="btn btn-secondary" style={{ width: '100%', color: 'var(--error)' }} onClick={() => {
+                if (window.confirm('Wipe profile data? This cannot be undone.')) {
                   const updated = profiles.filter(p => p.id !== currentUser.id)
                   localStorage.removeItem(`happy-notes-${currentUser.id}`)
                   setProfiles(updated)
@@ -204,26 +208,31 @@ function App() {
                   setSelectedUser(null)
                 }
               }}>Delete Profile</button>
-              {settingsStatus && <p style={{ marginTop: '1.5rem', textAlign: 'center', fontWeight: 600 }}>{settingsStatus}</p>}
+              {settingsStatus && <p style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.9rem' }}>{settingsStatus}</p>}
             </div>
           </div>
         ) : view === 'notes' ? (
-          <div style={{ animation: 'slideIn 0.8s var(--ease-premium)' }}>
-            <h1 className="title-reveal">Notes.</h1>
+          <div style={{ animation: 'entrance 0.8s var(--ease-soft)' }}>
+            <div className="section-header">
+              <h1 className="section-title">Workspace.</h1>
+              <p style={{ color: 'var(--text-dim)' }}>Capturing ideas in real-time</p>
+            </div>
             <div className="notes-grid">
               {notes.length === 0 ? (
-                <div className="empty-state-card">
-                  <div style={{ fontSize: '3rem', opacity: 0.3 }}>✦</div>
-                  <p>{motivation}</p>
-                  <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>Create First Note</button>
+                <div className="empty-state-card" style={{ background: 'var(--surface-mid)', border: '1px dashed var(--border-soft)', padding: '5rem', borderRadius: '40px', gridColumn: '1/-1', textAlign: 'center' }}>
+                  <div style={{ fontSize: '3rem', marginBottom: '1.5rem' }}>✨</div>
+                  <p style={{ fontSize: '1.4rem', color: 'var(--text-dim)', maxWidth: '400px', margin: '0 auto 2.5rem', fontWeight: 500 }}>{motivation}</p>
+                  <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>Start Crafting</button>
                 </div>
               ) : notes.map(note => (
                 <div key={note.id} className="note-card" onClick={() => { setEditingNote(note.id); setForm(note); setIsModalOpen(true); }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <h3>{note.title || 'Untitled'}</h3>
-                    <span style={{ fontSize: '0.8rem', opacity: 0.2, fontWeight: 700 }}>{note.date}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
+                    <h3>{note.title || 'Draft'}</h3>
                   </div>
                   <p>{note.content}</p>
+                  <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'flex-end' }}>
+                    <span style={{ fontSize: '0.8rem', opacity: 0.2, fontWeight: 700 }}>{note.date}</span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -236,7 +245,7 @@ function App() {
             selectedDay={selectedCalDay}
             setSelectedDay={setSelectedCalDay}
             onDayClick={(date) => {
-              setForm({ title: '', content: '', color: 'default', date });
+              setForm({ title: '', content: '', date });
               setEditingNote(null);
               setIsModalOpen(true);
             }}
@@ -246,28 +255,25 @@ function App() {
 
       <button className="fab" onClick={() => {
         setEditingNote(null);
-        setForm({ title: '', content: '', color: 'default', date: new Date().toISOString().split('T')[0] });
+        setForm({ title: '', content: '', date: new Date().toISOString().split('T')[0] });
         setIsModalOpen(true);
-      }}>+</button>
+      }}> + </button>
 
       {isModalOpen && (
-        <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(30px)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setIsModalOpen(false)}>
-          <div className="auth-card" style={{ maxWidth: '650px', padding: '5rem' }} onClick={e => e.stopPropagation()}>
-            <h2 style={{ fontSize: '2.5rem', marginBottom: '4rem', fontWeight: 800, letterSpacing: '-0.04em' }}>{editingNote ? 'Refine.' : 'Thought.'}</h2>
-
-            <div style={{ textAlign: 'left', marginBottom: '2rem' }}>
-              <label style={{ fontSize: '0.75rem', opacity: 0.4, fontWeight: 800, textTransform: 'uppercase', marginLeft: '1rem', marginBottom: '0.8rem', display: 'block' }}>Subject</label>
-              <input className="form-input" style={{ background: 'var(--surface-bright)' }} placeholder="Name this idea..." value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
+        <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(30px)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setIsModalOpen(false)}>
+          <div className="auth-card" style={{ maxWidth: '650px', padding: '4rem' }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '3.5rem' }}>Refine Idea.</h2>
+            <div style={{ textAlign: 'left', marginBottom: '1.5rem' }}>
+              <label style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', marginLeft: '1rem', marginBottom: '0.6rem', display: 'block' }}>SUBJECT</label>
+              <input className="form-input" placeholder="Give this idea a name" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
             </div>
-
-            <div style={{ textAlign: 'left', marginBottom: '3rem' }}>
-              <label style={{ fontSize: '0.75rem', opacity: 0.4, fontWeight: 800, textTransform: 'uppercase', marginLeft: '1rem', marginBottom: '0.8rem', display: 'block' }}>Details</label>
-              <textarea className="form-input" style={{ background: 'var(--surface-bright)', resize: 'none' }} rows="8" placeholder="Expand your mind here..." value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} />
+            <div style={{ textAlign: 'left', marginBottom: '2.5rem' }}>
+              <label style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', marginLeft: '1rem', marginBottom: '0.6rem', display: 'block' }}>BODY CONTENT</label>
+              <textarea className="form-input" rows="8" style={{ resize: 'none' }} placeholder="Type your thoughts..." value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} />
             </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-              <button className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Cancel</button>
-              <button className="btn btn-primary" onClick={saveNote}>Save Changes</button>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1.2rem' }}>
+              <button className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Discard</button>
+              <button className="btn btn-primary" onClick={saveNote}>Commit to Memory</button>
             </div>
           </div>
         </div>
@@ -287,44 +293,42 @@ function CalendarView({ date, setDate, notes, selectedDay, setSelectedDay, onDay
   const dayNotes = notes.filter(n => n.date === selectedDay)
 
   return (
-    <div className="calendar-view" style={{ animation: 'slideIn 0.8s var(--ease-premium)' }}>
+    <div className="calendar-view" style={{ animation: 'entrance 0.8s var(--ease-soft)' }}>
       <div className="calendar-main">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5rem' }}>
-          <h1 style={{ fontSize: '4.5rem', fontWeight: 800, letterSpacing: '-0.07em' }}>{monthNames[date.getMonth()]} <span style={{ opacity: 0.15 }}>{date.getFullYear()}</span></h1>
-          <div style={{ display: 'flex', gap: '1.2rem' }}>
-            <button className="btn btn-secondary" style={{ padding: '1rem 1.5rem' }} onClick={() => setDate(new Date(date.getFullYear(), date.getMonth() - 1, 1))}>←</button>
-            <button className="btn btn-secondary" style={{ padding: '1rem 1.5rem' }} onClick={() => setDate(new Date(date.getFullYear(), date.getMonth() + 1, 1))}>→</button>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4rem' }}>
+          <h1 className="section-title">{monthNames[date.getMonth()]} <span style={{ opacity: 0.1 }}>{date.getFullYear()}</span></h1>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <button className="btn btn-secondary" style={{ width: '50px', padding: '0' }} onClick={() => setDate(new Date(date.getFullYear(), date.getMonth() - 1, 1))}>←</button>
+            <button className="btn btn-secondary" style={{ width: '50px', padding: '0' }} onClick={() => setDate(new Date(date.getFullYear(), date.getMonth() + 1, 1))}>→</button>
           </div>
         </div>
-        <div className="calendar-grid">
-          {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map(d => <div key={d} style={{ textAlign: 'center', fontSize: '0.75rem', fontWeight: 900, opacity: 0.25, padding: '1.5rem 0' }}>{d}</div>)}
-          {grid.map((d, i) => {
-            if (!d) return <div key={i}></div>
-            const dStr = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`
-            const hasNote = notes.some(n => n.date === dStr)
-            const isToday = new Date().toISOString().split('T')[0] === dStr
-            const isSelected = selectedDay === dStr
-            return (
-              <div key={i} className={`calendar-day ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''}`} onClick={() => { setSelectedDay(dStr); onDayClick(dStr); }}>
-                {d}
-                {hasNote && !isSelected && <div style={{ position: 'absolute', bottom: '12px', width: '5px', height: '5px', borderRadius: '50%', background: 'currentColor', opacity: 0.4 }}></div>}
-              </div>
-            )
-          })}
+        <div className="calendar-grid-container">
+          <div className="calendar-grid">
+            {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map(d => <div key={d} style={{ textAlign: 'center', fontSize: '0.7rem', fontWeight: 900, opacity: 0.2, padding: '1rem 0' }}>{d}</div>)}
+            {grid.map((d, i) => {
+              if (!d) return <div key={i}></div>
+              const dStr = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`
+              const hasNote = notes.some(n => n.date === dStr)
+              const isToday = new Date().toISOString().split('T')[0] === dStr
+              const isSelected = selectedDay === dStr
+              return (
+                <div key={i} className={`calendar-day ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''}`} onClick={() => { setSelectedDay(dStr); onDayClick(dStr); }}>
+                  {d}
+                  {hasNote && !isSelected && <div style={{ position: 'absolute', bottom: '10px', width: '4px', height: '4px', borderRadius: '50%', background: 'currentColor', opacity: 0.5 }}></div>}
+                </div>
+              )
+            })}
+          </div>
         </div>
       </div>
-      <div className="day-detail" style={{ background: 'var(--surface-bright)', padding: '4rem 3rem', borderRadius: '40px', border: '1px solid var(--border)' }}>
-        <h2 style={{ marginBottom: '3rem', fontSize: '1.1rem', opacity: 0.3, fontWeight: 800, letterSpacing: '0.1em' }}>{selectedDay}</h2>
+      <div className="day-detail" style={{ background: 'var(--surface-mid)', padding: '3.5rem', borderRadius: '32px', border: '1px solid var(--border-soft)' }}>
+        <h2 style={{ marginBottom: '2.5rem', fontSize: '1rem', opacity: 0.4, fontWeight: 800 }}>{selectedDay}</h2>
         {dayNotes.length > 0 ? dayNotes.map(n => (
-          <div key={n.id} style={{ marginBottom: '3rem' }}>
-            <h4 style={{ fontWeight: 800, fontSize: '1.2rem', marginBottom: '0.8rem' }}>{n.title || 'Draft'}</h4>
-            <p style={{ fontSize: '1rem', color: 'var(--text-dim)', lineHeight: 1.7 }}>{n.content}</p>
+          <div key={n.id} style={{ marginBottom: '2.5rem' }}>
+            <h4 style={{ fontWeight: 800, fontSize: '1.2rem', marginBottom: '0.6rem' }}>{n.title || 'Draft'}</h4>
+            <p style={{ fontSize: '0.95rem', color: 'var(--text-dim)', lineHeight: 1.6 }}>{n.content}</p>
           </div>
-        )) : (
-          <div style={{ marginTop: '5rem', textAlign: 'center' }}>
-            <p style={{ opacity: 0.2, fontSize: '0.95rem', fontWeight: 500 }}>Nothing planned.</p>
-          </div>
-        )}
+        )) : <div style={{ marginTop: '5rem', textAlign: 'center', opacity: 0.2 }}>No records found.</div>}
       </div>
     </div>
   )
