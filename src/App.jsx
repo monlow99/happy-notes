@@ -268,7 +268,7 @@ function App() {
     if (editingNote) {
       setNotes(notes.map(n => n.id === editingNote ? { ...n, ...form } : n))
     } else {
-      setNotes([{ ...form, id: Date.now(), pinned: false }, ...notes])
+      setNotes([{ ...form, id: Date.now(), pinned: false, location: weather?.city || null }, ...notes])
     }
     setIsModalOpen(false); setEditingNote(null);
   }
@@ -473,7 +473,12 @@ function App() {
                     <h3>{note.title || 'Borrador'}</h3>
                   </div>
                   <p>{note.content}</p>
-                  <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'flex-end', opacity: 0.3, fontSize: '0.8rem', fontWeight: 800 }}>{note.date}</div>
+                  <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: 0.3, fontSize: '0.8rem', fontWeight: 800 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      {note.location && <><MapPin size={12} /> {note.location}</>}
+                    </div>
+                    <div>{note.date}</div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -572,6 +577,11 @@ function CalendarView({ date, setDate, notes, selectedDay, setSelectedDay, onDay
               <div key={n.id} style={{ marginBottom: '2rem' }}>
                 <h4 style={{ fontWeight: 800, fontSize: '1.4rem', marginBottom: '0.6rem', fontFamily: 'Caveat, cursive' }}>{n.title || 'Nota'}</h4>
                 <p style={{ fontSize: '1rem', color: 'var(--text-dim)', lineHeight: 1.7 }}>{n.content}</p>
+                {n.location && (
+                  <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', opacity: 0.4, fontWeight: 700 }}>
+                    <MapPin size={12} /> {n.location}
+                  </div>
+                )}
               </div>
             )) : <div style={{ marginTop: '4rem', textAlign: 'center', opacity: 0.2, fontWeight: 700 }}>Sin planes.</div>}
           </div>

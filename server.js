@@ -35,6 +35,7 @@ db.serialize(() => {
     title TEXT,
     content TEXT,
     date TEXT,
+    location TEXT,
     pinned BOOLEAN DEFAULT 0,
     FOREIGN KEY (user_id) REFERENCES users (id)
   )`);
@@ -86,9 +87,9 @@ app.post('/api/notes/:userId/sync', (req, res) => {
         db.run('DELETE FROM notes WHERE user_id = ?', [userId], (err) => {
             if (err) return res.status(500).json({ error: err.message });
 
-            const stmt = db.prepare('INSERT INTO notes (id, user_id, title, content, date, pinned) VALUES (?, ?, ?, ?, ?, ?)');
+            const stmt = db.prepare('INSERT INTO notes (id, user_id, title, content, date, location, pinned) VALUES (?, ?, ?, ?, ?, ?, ?)');
             notes.forEach(note => {
-                stmt.run(note.id.toString(), userId, note.title, note.content, note.date, note.pinned ? 1 : 0);
+                stmt.run(note.id.toString(), userId, note.title, note.content, note.date, note.location || null, note.pinned ? 1 : 0);
             });
             stmt.finalize();
             res.json({ message: 'Sincronización completada' });
