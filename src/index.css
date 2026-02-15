@@ -25,6 +25,42 @@
   --radius-lg: 20px;
   --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
   --transition: all 0.4s var(--ease-premium);
+  /* Utility Colors */
+  --error: #ef4444;
+  --success: #10b981;
+}
+
+/* 🌞 Light Mode Sovereign Symmetry */
+body.light-mode {
+  --bg-dark: #f8fafc;
+  --surface-low: rgba(255, 255, 255, 0.7);
+  --surface-mid: rgba(255, 255, 255, 0.9);
+  --surface-bright: rgba(0, 0, 0, 0.03);
+  --border-soft: rgba(0, 0, 0, 0.06);
+  --border-active: rgba(0, 0, 0, 0.12);
+  --text-main: #0f172a;
+  --text-dim: #475569;
+  --text-muted: #94a3b8;
+  --accent-glow: rgba(16, 185, 129, 0.15);
+}
+
+body.light-mode .bg-mesh {
+  background:
+    radial-gradient(circle at 15% 15%, rgba(16, 185, 129, 0.05) 0%, transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(14, 165, 233, 0.05) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, #f1f5f9 0%, transparent 100%);
+}
+
+body.light-mode .note-card,
+body.light-mode .auth-card,
+body.light-mode .modal-card {
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+}
+
+body.light-mode .user-name-tag,
+body.light-mode .nav-text,
+body.light-mode .unit-main {
+  color: var(--text-main);
 }
 
 * {
@@ -906,4 +942,119 @@ body.is-mobile .status-container {
   border-top: 1px solid var(--border-soft);
   padding-top: 1.5rem;
   border-radius: 0;
+}
+/* 📌 Pinned Notes & Categories */
+.note-card.pinned {
+  border-color: var(--accent-primary);
+  background: rgba(16, 185, 129, 0.03);
+}
+
+.pin-indicator {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  color: var(--accent-primary);
+  filter: drop-shadow(0 0 8px var(--accent-glow));
+}
+
+.category-chip {
+  padding: 0.3rem 0.8rem;
+  border-radius: 12px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--surface-bright);
+  border: 1px solid var(--border-soft);
+  color: var(--accent-secondary);
+}
+
+.category-filter-bar {
+  display: flex;
+  gap: 0.8rem;
+  margin-bottom: 2.5rem;
+  overflow-x: auto;
+  padding-bottom: 1rem;
+  scrollbar-width: none;
+}
+
+.category-filter-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-chip {
+  padding: 0.6rem 1.2rem;
+  border-radius: 14px;
+  background: var(--surface-low);
+  border: 1px solid var(--border-soft);
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition);
+}
+
+.filter-chip:hover {
+  background: var(--surface-mid);
+  color: var(--text-main);
+}
+
+.filter-chip.active {
+  background: var(--accent-primary);
+  color: #fff;
+  border-color: var(--accent-primary);
+  box-shadow: 0 8px 20px var(--accent-glow);
+}
+
+.category-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
+}
+
+/* 📥 Export Actions */
+.export-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-soft);
+}
+
+.btn-export {
+  padding: 0.6rem 1rem;
+  font-size: 0.8rem;
+  background: var(--surface-bright);
+  border: 1px solid var(--border-soft);
+  color: var(--text-dim);
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--transition);
+}
+
+.btn-export:hover {
+  background: var(--surface-mid);
+  color: var(--text-main);
+  border-color: var(--accent-primary);
+}
+
+@media print {
+  .sidebar, .fab, .app-header, .nav-link, .category-filter-bar, .export-actions {
+    display: none !important;
+  }
+  .content-area {
+    padding: 0 !important;
+  }
+  .note-card {
+    break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #eee !important;
+    color: #000 !important;
+  }
 }

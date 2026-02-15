@@ -37,8 +37,15 @@ db.serialize(() => {
     date TEXT,
     location TEXT,
     pinned BOOLEAN DEFAULT 0,
+    category TEXT,
     FOREIGN KEY (user_id) REFERENCES users (id)
-  )`);
+  )`, (err) => {
+        if (!err) {
+            db.run("ALTER TABLE notes ADD COLUMN category TEXT", (err) => {
+                // Ignore error if column already exists
+            });
+        }
+    });
 });
 
 // 👤 Profiles Routes
@@ -60,31 +67,13 @@ app.post('/api/profiles', (req, res) => {
 
 app.post('/api/login', (req, res) => {
     const { id, pin } = req.body;
-    console.log(`🔐 Intento de login para ID: ${id}`);
     db.get('SELECT * FROM users WHERE id = ? AND pin = ?', [id, pin], (err, row) => {
-        if (err) {
-            console.error('❌ Error en DB durante login:', err);
-            return res.status(500).json({ error: err.message });
-        }
+        if (err) return res.status(500).json({ error: err.message });
         if (row) {
-            console.log(`✅ Login exitoso: ${row.name}`);
             res.json({ success: true, user: { id: row.id, name: row.name, avatar: row.avatar } });
         } else {
-            console.log(`⚠️ Login fallido para ID: ${id}`);
-            res.status(401).json({ success: false, message: 'ID o PIN incorrecto' });
+            res.status(401).json({ success: false, message: 'PIN incorrecto' });
         }
-    });
-});
-
-app.delete('/api/profiles/:userId', (req, res) => {
-    const { userId } = req.params;
-    db.serialize(() => {
-        db.run('DELETE FROM notes WHERE user_id = ?', [userId]);
-        db.run('DELETE FROM users WHERE id = ?', [userId], (err) => {
-            if (err) return res.status(500).json({ error: err.message });
-            console.log(`🗑️ Perfil eliminado: ${userId}`);
-            res.json({ message: 'Perfil y notas eliminados' });
-        });
     });
 });
 
@@ -105,9 +94,9 @@ app.post('/api/notes/:userId/sync', (req, res) => {
         db.run('DELETE FROM notes WHERE user_id = ?', [userId], (err) => {
             if (err) return res.status(500).json({ error: err.message });
 
-            const stmt = db.prepare('INSERT INTO notes (id, user_id, title, content, date, location, pinned) VALUES (?, ?, ?, ?, ?, ?, ?)');
+            const stmt = db.prepare('INSERT INTO notes (id, user_id, title, content, date, location, pinned, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
             notes.forEach(note => {
-                stmt.run(note.id.toString(), userId, note.title, note.content, note.date, note.location || null, note.pinned ? 1 : 0);
+                stmt.run(note.id.toString(), userId, note.title, note.content, note.date, note.location || null, note.pinned ? 1 : 0, note.category || null);
             });
             stmt.finalize();
             res.json({ message: 'Sincronización completada' });

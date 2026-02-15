@@ -1,34 +1,32 @@
 # 🌿 Happy Notes - UI UX Pro Max Edition
 
-¡Bienvenido a **Happy Notes**! Una experiencia de productividad inmersiva, elegante y segura, diseñada para capturar tus ideas con un estilo **Slate Emerald** de alta gama.
+¡Bienvenido a **Happy Notes**! Una experiencia de productividad inmersiva, elegante y segura, diseñada para capturar tus ideas con un estilo de alta gama.
 
 ![Login Screen](public/login.png)
 
 ## 🌟 Características Pro-Max
 
-- **🌐 Sincronización Multi-Dispositivo**: Base de datos centralizada en **SQLite**. Accede a tus notas desde cualquier dispositivo usando tu **ID de Sincronización** único.
-- **🔐 Acceso Flexible**: Elige entre la lista de perfiles guardados o inicia sesión manualmente con tu ID en cualquier equipo de la red.
+- **🏷️ Categorías y Etiquetas**: Organiza tus notas en secciones (General, Trabajo, Personal, Ideas) para un acceso rápido y ordenado.
+- **📌 Notas Fijadas (Pins)**: Mantén tus pensamientos más importantes siempre arriba con la función de fijado prioritario.
+- **🌓 Modo Dual (Claro/Oscuro)**: Cambia instantáneamente entre el elegante tema *Slate Emerald* (oscuro) y el limpio *Snow Emerald* (claro).
+- **📥 Exportación Avanzada**: Guarda tus notas individualmente en **TXT**, imprímelas en **PDF** con un diseño limpio, o exporta toda tu información en **JSON** para copias de seguridad.
+- **🔐 Acceso Simplificado**: Inicia sesión con un **Nombre de Usuario** fácil de recordar (¡sin números largos!) y tu PIN.
+- **🌐 Sincronización Multi-Dispositivo**: Base de datos centralizada en **SQLite**. Accede a tus notas desde cualquier dispositivo de tu red local.
 - **🚀 Arquitectura Full-Stack**: Integridad de datos gestionada por un servidor Node.js/Express de alto rendimiento.
-- **🖋️ Tipografía Curada**: Combinación perfecta de *Plus Jakarta Sans* para la interfaz y *Caveat* para tus pensamientos más personales.
-- **📱 Experiencia Fluida**: Animaciones con curvas de aprendizaje `cubic-bezier` y diseño responsivo adaptativo.
 
 ## 📸 Galería de la Aplicación
 
-### 🔐 Gestión de Perfiles y Acceso
-![Login Preview](public/login.png)
-*Pantalla de inicio con simetría axial y detección de ubicación.*
+### 🔐 Gestión de Acceso Simple
+*Acceso por grid de perfiles o mediante ID de usuario simplificado.*
 
-### 🚀 Notas del Día (Workspace)
-![Workspace Preview](public/workspace.png)
-*Tu centro de creación minimalista con organización por tarjetas inteligentes.*
+### 🚀 Mis Notas (Workspace)
+*Tu centro de creación con filtrado por categorías y notas fijadas prioritarias.*
 
 ### 📅 Calendario Soberano
-![Calendar Preview](public/calendar.png)
 *Planifica tu tiempo con una vista de calendario integrada y Physics de cristal.*
 
-### ⚙️ Ajustes de Seguridad
-![Settings Preview](public/settings.png)
-*Panel avanzado para gestionar tu PIN y la integridad de tu cuenta.*
+### 🌓 Personalización
+*Intercambio dinámico de temas para adaptarse a tu entorno de trabajo.*
 
 ## 🚀 Instalación y Uso
 
@@ -53,18 +51,19 @@
    - Terminal 1 (Base de Datos): `npm run server`
    - Terminal 2 (Frontend): `npm run dev`
    
-   *Nota: Al usar HTTPS local, el navegador te pedirá confirmar el certificado de seguridad. Haz clic en "Avanzado" y "Continuar".*
+   *Nota: La aplicación detectará automáticamente tu ubicación para el clima en tiempo real.*
 
 4. **Acceso**: 
-   - **Local**: [https://localhost:5174/](https://localhost:5174/)
-   - **Desde otros dispositivos**: `https://[IP-DE-TU-PC]:5174/`
+   - **Local**: [http://localhost:5173/](http://localhost:5173/)
+   - **Desde otros dispositivos**: `http://[IP-DE-TU-PC]:5173/`
 
 ## 🛠️ Stack Tecnológico
 
-- **React 19** - El corazón de la reactividad.
-- **Vite 5** - Bundler ultra-rápido con soporte SSL nativo.
+- **React 18/19** - El corazón de la reactividad.
+- **Vite** - Bundler ultra-rápido.
+- **SQLite 3** - Persistencia de datos robusta y ligera.
 - **Lucide React** - Iconografía profesional y consistente.
-- **Vanilla CSS** - Diseño puro con variables y efectos Pro-Max.
+- **Vanilla CSS** - Diseño puro con variables y efectos Pro-Max altamente responsivos.
 - **Open-Meteo & OpenStreetMap** - Datos ambientales en tiempo real.
 
 ---
