@@ -35,7 +35,10 @@ const MOTIVACIONES = [
 function App() {
   const [profiles, setProfiles] = useState([])
 
-  const [currentUser, setCurrentUser] = useState(null)
+  const [currentUser, setCurrentUser] = useState(() => {
+    const saved = localStorage.getItem('happy-session');
+    return saved ? JSON.parse(saved) : null;
+  })
   const [selectedUser, setSelectedUser] = useState(null)
   const [password, setPassword] = useState('')
   const [error, setError] = useState(false)
@@ -154,15 +157,30 @@ function App() {
 
   useEffect(() => {
     if (currentUser) {
+      localStorage.setItem('happy-session', JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem('happy-session');
+    }
+  }, [currentUser])
+
+  useEffect(() => {
+    if (currentUser) {
       const fetchNotes = async () => {
         try {
           const res = await fetch(`${API_URL}/api/notes/${currentUser.id}`);
           const data = await res.json();
-          setNotes(data);
-          setMotivation(MOTIVACIONES[Math.floor(Math.random() * MOTIVACIONES.length)])
+
+          // Comparación simple para evitar ciclos de actualización infinitos
+          if (JSON.stringify(data) !== JSON.stringify(notes)) {
+            setNotes(data);
+          }
+          if (!motivation) setMotivation(MOTIVACIONES[Math.floor(Math.random() * MOTIVACIONES.length)]);
         } catch (e) { console.error("Error cargando notas:", e); }
       }
-      fetchNotes();
+
+      fetchNotes(); // Carga inicial
+      const interval = setInterval(fetchNotes, 5000); // Polling cada 5 segundos
+      return () => clearInterval(interval);
     }
   }, [currentUser])
 
